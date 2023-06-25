@@ -5,6 +5,7 @@ import (
 	"go-clean-arch/constants"
 	"go-clean-arch/infrastructure"
 	"go-clean-arch/lib"
+	"go-clean-arch/utils"
 	"net/http"
 	"strings"
 
@@ -39,12 +40,12 @@ func (m JWTAuthMiddleware) Handle() gin.HandlerFunc {
 				c.Next()
 				return
 			}
-			lib.ErrorJSON(c, http.StatusInternalServerError, err)
+			utils.ErrorJSON(c, http.StatusInternalServerError, err)
 			c.Abort()
 			return
 		}
 
-		lib.ErrorJSON(c, http.StatusUnauthorized, errors.New("you are not authorized"))
+		utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("you are not authorized"))
 		c.Abort()
 	}
 }

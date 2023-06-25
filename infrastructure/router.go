@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"go-clean-arch/lib"
+	"go-clean-arch/utils"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -55,7 +56,7 @@ func NewRouter(
 	// }))
 
 	httpRouter.GET("/health-check", func(c *gin.Context) {
-		lib.SuccessJSON(c, http.StatusOK, "clean architecture 📺 API Up and Running")
+		utils.SuccessJSON(c, http.StatusOK, "clean architecture 📺 API Up and Running")
 	})
 
 	return Router{

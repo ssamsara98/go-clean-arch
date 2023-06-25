@@ -3,8 +3,8 @@ package routes
 import (
 	"errors"
 	"go-clean-arch/infrastructure"
-	"go-clean-arch/lib"
 	"go-clean-arch/src/middlewares"
+	"go-clean-arch/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -60,6 +60,6 @@ func (r Routes) Setup() {
 
 	// Not Found route
 	r.handler.NoRoute(func(c *gin.Context) {
-		lib.ErrorJSON(c, http.StatusNotFound, errors.New("not found"))
+		utils.ErrorJSON(c, http.StatusNotFound, errors.New("not found"))
 	})
 }

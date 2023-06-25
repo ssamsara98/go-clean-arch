@@ -6,6 +6,7 @@ import (
 	"go-clean-arch/models"
 	"go-clean-arch/src/dto"
 	"go-clean-arch/src/services"
+	"go-clean-arch/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,20 +29,20 @@ func NewAppController(
 
 func (app AppController) Home(c *gin.Context) {
 	message := app.appService.Home()
-	lib.SuccessJSON(c, http.StatusOK, message)
+	utils.SuccessJSON(c, http.StatusOK, message)
 }
 
 func (app AppController) Register(c *gin.Context) {
 	var body dto.RegisterUserDto
 	err := c.Bind(&body)
 	if err != nil {
-		lib.ErrorJSON(c, http.StatusBadRequest, err)
+		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	user, err := app.appService.Register(&body)
 	if err != nil {
-		lib.ErrorJSON(c, http.StatusInternalServerError, err)
+		utils.ErrorJSON(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -52,13 +53,13 @@ func (app AppController) Login(c *gin.Context) {
 	var body dto.LoginUserDto
 	err := c.Bind(&body)
 	if err != nil {
-		lib.ErrorJSON(c, http.StatusBadRequest, err)
+		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	token, err := app.appService.Login(&body)
 	if err != nil {
-		lib.ErrorJSON(c, http.StatusUnauthorized, err)
+		utils.ErrorJSON(c, http.StatusUnauthorized, err)
 		return
 	}
 

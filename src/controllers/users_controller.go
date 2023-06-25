@@ -28,24 +28,24 @@ func NewUsersController(
 func (u UsersController) GetUserList(c *gin.Context) {
 	users, err := u.usersService.SetPaginationScope(utils.Paginate(c)).GetUserList()
 	if err != nil {
-		lib.ErrorJSON(c, http.StatusInternalServerError, err)
+		utils.ErrorJSON(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	lib.JSONWithPagination(c, http.StatusOK, users)
+	utils.JSONWithPagination(c, http.StatusOK, users)
 }
 
 func (u UsersController) GetUserByID(c *gin.Context) {
 	var uri dto.GetUserByIDParams
 	err := c.ShouldBindUri(&uri)
 	if err != nil {
-		lib.ErrorJSON(c, http.StatusBadRequest, err)
+		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	user, err := u.usersService.GetUserByID(&uri)
 	if err != nil {
-		lib.ErrorJSON(c, http.StatusBadRequest, err)
+		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
