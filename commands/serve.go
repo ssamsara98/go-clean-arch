@@ -1,13 +1,17 @@
 package commands
 
 import (
+	"context"
 	"go-clean-arch/infrastructure"
 	"go-clean-arch/lib"
 	"go-clean-arch/src/middlewares"
 	"go-clean-arch/src/routes"
+	"net"
+	"net/http"
 	"time"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/fx"
 )
 
 // ServeCommand test command
@@ -28,6 +32,7 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 		middleware middlewares.Middlewares,
 		routes routes.Routes,
 		router infrastructure.Router,
+		lc fx.Lifecycle,
 	) {
 		logger.Info(`+-----------------------+`)
 		logger.Info(`| GO CLEAN ARCHITECTURE |`)
@@ -52,17 +57,45 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 		// }
 
 		logger.Info("Running server")
-		if env.ServerPort == "" {
-			if err := router.Run(); err != nil {
-				logger.Fatal(err)
-				return
-			}
+		// --- using router.Run
+		// if env.ServerPort == "" {
+		// 	if err := router.Run(); err != nil {
+		// 		logger.Fatal(err)
+		// 		return
+		// 	}
+		// } else {
+		// 	if err := router.Run(":" + env.ServerPort); err != nil {
+		// 		logger.Fatal(err)
+		// 		return
+		// 	}
+		// }
+
+		// --- using lifecycle
+		var srv *http.Server
+		if env.ServerPort != "" {
+			srv = &http.Server{Addr: ":" + env.ServerPort, Handler: router}
 		} else {
-			if err := router.Run(":" + env.ServerPort); err != nil {
-				logger.Fatal(err)
-				return
-			}
+			srv = &http.Server{Handler: router}
 		}
+		lc.Append(fx.Hook{
+			OnStart: func(ctx context.Context) error {
+				ln, err := net.Listen("tcp", srv.Addr)
+				if err != nil {
+					return err
+				}
+				logger.Info("Starting HTTP server at", srv.Addr)
+				go func() {
+					err := srv.Serve(ln)
+					if err != nil {
+						logger.Info(err)
+					}
+				}()
+				return nil
+			},
+			OnStop: func(ctx context.Context) error {
+				return srv.Shutdown(ctx)
+			},
+		})
 	}
 }
 
