@@ -33,6 +33,23 @@ func (app AppService) Home() string {
 	return "Hello, World!"
 }
 
+func (app AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
+	var user models.User
+
+	result := app.db.Where("email = ?", body.Email).Or("username = ?", body.Username).First(&user)
+	if result.Error != nil {
+		return nil
+	}
+
+	if *user.Email == body.Email {
+		_ = result.AddError(errors.New("email already exist"))
+	}
+	if *user.Username == body.Username {
+		_ = result.AddError(errors.New("username already exist"))
+	}
+	return result.Error
+}
+
 func (app AppService) Register(body *dto.RegisterUserDto) (*models.User, error) {
 	hashedPassword := utils.HashPassword([]byte(body.Password))
 
@@ -67,4 +84,19 @@ func (app AppService) Login(body *dto.LoginUserDto) (*infrastructure.Token, erro
 	token := app.jwtAuthHelper.CreateToken(user)
 
 	return token, nil
+}
+
+func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfile) error {
+	user := &models.User{
+		ModelBase: lib.ModelBase{ID: id},
+		Name:      body.Name,
+		Birthdate: body.Birthdate,
+	}
+
+	err := app.db.Model(&user).Updates(user).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

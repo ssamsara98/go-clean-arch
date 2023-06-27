@@ -39,7 +39,6 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 
 		middleware.Setup()
 		routes.Setup()
-		// seeds.Setup()
 
 		// if env.Environment != "local" && env.SentryDSN != "" {
 		// 	err := sentry.Init(sentry.ClientOptions{

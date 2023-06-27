@@ -40,6 +40,12 @@ func (app AppController) Register(c *gin.Context) {
 		return
 	}
 
+	err = app.appService.FindEmailUsername(&body)
+	if err != nil {
+		utils.ErrorJSON(c, http.StatusConflict, err)
+		return
+	}
+
 	user, err := app.appService.Register(&body)
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusInternalServerError, err)
@@ -70,4 +76,22 @@ func (app AppController) Me(c *gin.Context) {
 	user, _ := c.MustGet(constants.User).(*models.User)
 
 	c.JSON(http.StatusOK, user)
+}
+
+func (app AppController) UpdateProfile(c *gin.Context) {
+	var body dto.UpdateProfile
+	err := c.Bind(&body)
+	if err != nil {
+		utils.ErrorJSON(c, http.StatusBadRequest, err)
+		return
+	}
+
+	user, _ := c.MustGet(constants.User).(*models.User)
+	err = app.appService.UpdateProfile(user.ID, &body)
+	if err != nil {
+		utils.ErrorJSON(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.SuccessJSON(c, http.StatusOK, "success")
 }

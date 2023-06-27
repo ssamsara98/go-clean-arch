@@ -11,12 +11,13 @@ import (
 // Database modal
 type Database struct {
 	*gorm.DB
+	logger lib.Logger
 }
 
 // NewDatabase creates a new database instance
 func NewDatabase(
 	env *lib.Env,
-	logger lib.Logger,
+	log lib.Logger,
 ) Database {
 	url := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%s dbname=%s",
@@ -27,17 +28,17 @@ func NewDatabase(
 		env.DBName,
 	)
 
-	logger.Info("opening db connection")
+	log.Info("opening db connection")
 	db, err := gorm.Open(postgres.Open(url), &gorm.Config{
-		// Logger: logger.GetGormLogger(),
-		// Logger: gormlogger.Default.LogMode(gormlogger.Info),
+		Logger: log.GetGormLogger(),
+		// Logger: logger.Default.LogMode(logger.Warn),
 	})
 	if err != nil {
-		logger.Info("Url: ", url)
-		logger.Panic(err)
+		log.Info("Url: ", url)
+		log.Panic(err)
 	}
 
-	// 	logger.Info("creating database if it does't exist")
+	// 	log.Info("creating database if it does't exist")
 	// 	pgCreateDb := fmt.Sprintf(`
 	// DO
 	// $do$
@@ -56,24 +57,36 @@ func NewDatabase(
 	// END
 	// $do$`, env.DBName, env.DBUsername, env.DBPassword)
 	// 	if err = db.Exec(pgCreateDb).Error; err != nil {
-	// 		logger.Info("couldn't create database")
-	// 		logger.Panic(err)
+	// 		log.Info("couldn't create database")
+	// 		log.Panic(err)
 	// 	}
 
-	// logger.Info("using given database")
+	// log.Info("using given database")
 	// if err := db.Exec(fmt.Sprintf("USE %s", env.DBName)).Error; err != nil {
-	// 	logger.Info("cannot use the given database")
-	// 	logger.Panic(err)
+	// 	log.Info("cannot use the given database")
+	// 	log.Panic(err)
 	// }
-	logger.Info("database connection established")
+	log.Info("database connection established")
 
-	database := Database{DB: db}
-	logger.Info("currentDatabase:", db.Migrator().CurrentDatabase())
+	database := Database{
+		db,
+		log,
+	}
+	log.Info("currentDatabase:", db.Migrator().CurrentDatabase())
 
-	if err := RunMigration(env, logger, database); err != nil {
-		logger.Info("migration failed.")
-		logger.Panic(err)
+	if err := RunMigration(env, log, database); err != nil {
+		log.Info("migration failed.")
+		log.Panic(err)
 	}
 
 	return database
+}
+
+// WithTrx delegate transaction from user repository
+func (d Database) WithTrx(trxHandle *gorm.DB) Database {
+	if trxHandle != nil {
+		d.logger.Debug("using WithTrx as trxHandle is not nil")
+		d.DB = trxHandle
+	}
+	return d
 }

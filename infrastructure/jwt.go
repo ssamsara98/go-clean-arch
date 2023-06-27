@@ -66,7 +66,7 @@ func (j JWTAuthHelper) Authorize(tokenString string) (*models.User, error) {
 		}
 
 		var user models.User
-		j.db.Find(&models.User{}, claims["sub"]).First(&user)
+		j.db.Where("id = ?", uint(claims["sub"].(float64))).First(&user)
 
 		return &user, nil
 	} else if ve, ok := err.(*jwt.ValidationError); ok {

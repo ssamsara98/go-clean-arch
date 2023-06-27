@@ -48,7 +48,7 @@ func NewRouter(
 		AllowCredentials: true,
 	}))
 	httpRouter.Use(gin.Recovery())
-	httpRouter.Use(gin.Logger())
+	// httpRouter.Use(gin.Logger())
 
 	// // Attach sentry middleware
 	// httpRouter.Use(sentrygin.New(sentrygin.Options{

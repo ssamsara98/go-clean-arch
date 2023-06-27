@@ -100,7 +100,9 @@ func (l *Logger) GetGormLogger() gormlogger.Interface {
 	result := &GormLogger{
 		Logger: newSugaredLogger(logger),
 		Config: gormlogger.Config{
-			LogLevel: gormlogger.Info,
+			LogLevel:                  gormlogger.Info,
+			IgnoreRecordNotFoundError: false,
+			Colorful:                  true,
 		},
 	}
 	return result

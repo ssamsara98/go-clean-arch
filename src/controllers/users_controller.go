@@ -45,7 +45,7 @@ func (u UsersController) GetUserByID(c *gin.Context) {
 
 	user, err := u.usersService.GetUserByID(&uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
+		utils.ErrorJSON(c, http.StatusNotFound, err)
 		return
 	}
 

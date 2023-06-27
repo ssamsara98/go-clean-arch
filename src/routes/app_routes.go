@@ -26,4 +26,5 @@ func (app AppRoutes) Run(handler infrastructure.Router) {
 	handler.POST("/register", app.appController.Register)
 	handler.POST("/login", app.appController.Login)
 	handler.GET("/me", app.jwtAuthMiddleware.Handle(), app.appController.Me)
+	handler.PATCH("/me", app.jwtAuthMiddleware.Handle(), app.appController.UpdateProfile)
 }

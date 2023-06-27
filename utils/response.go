@@ -41,8 +41,8 @@ func JSONWithPagination(c *gin.Context, statusCode int, response gin.H) {
 		gin.H{
 			"result": response["result"],
 			"pagination": gin.H{
-				"has_next": (response["count"].(int64) - limit*page) > 0,
-				"count":    response["count"],
+				"hasNext": (response["count"].(int64) - limit*page) > 0,
+				"count":   response["count"],
 			},
 		})
 }
