@@ -6,7 +6,6 @@ import (
 	"go-clean-arch/lib"
 	"go-clean-arch/src/middlewares"
 	"go-clean-arch/src/routes"
-	"net"
 	"net/http"
 	"time"
 
@@ -31,7 +30,7 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 		database infrastructure.Database,
 		middleware middlewares.Middlewares,
 		routes routes.Routes,
-		router infrastructure.Router,
+		e infrastructure.Router,
 		lc fx.Lifecycle,
 	) {
 		logger.Info(`+-----------------------+`)
@@ -45,55 +44,26 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 		middleware.Setup()
 		routes.Setup()
 
-		// if env.Environment != "local" && env.SentryDSN != "" {
-		// 	err := sentry.Init(sentry.ClientOptions{
-		// 		Dsn:              env.SentryDSN,
-		// 		AttachStacktrace: true,
-		// 	})
-		// 	if err != nil {
-		// 		logger.Error("sentry initialization failed")
-		// 		logger.Error(err.Error())
-		// 	}
-		// }
-
 		logger.Info("Running server")
-		// --- using router.Run
-		// if env.ServerPort == "" {
-		// 	if err := router.Run(); err != nil {
-		// 		logger.Fatal(err)
-		// 		return
-		// 	}
-		// } else {
-		// 	if err := router.Run(":" + env.ServerPort); err != nil {
-		// 		logger.Fatal(err)
-		// 		return
-		// 	}
-		// }
-
-		// --- using lifecycle
-		var srv *http.Server
-		if env.ServerPort != "" {
-			srv = &http.Server{Addr: ":" + env.ServerPort, Handler: router}
-		} else {
-			srv = &http.Server{Handler: router}
-		}
 		lc.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
-				ln, err := net.Listen("tcp", srv.Addr)
-				if err != nil {
-					return err
-				}
-				logger.Info("Starting HTTP server at", srv.Addr)
+				// Start server
 				go func() {
-					err := srv.Serve(ln)
-					if err != nil {
-						logger.Info(err)
+					var err error
+					if env.ServerPort != "" {
+						err = e.Start(":" + env.ServerPort)
+					} else {
+						err = e.Start(":8080")
+					}
+
+					if err != nil && err != http.ErrServerClosed {
+						e.Logger.Fatal("shutting down the server")
 					}
 				}()
 				return nil
 			},
 			OnStop: func(ctx context.Context) error {
-				return srv.Shutdown(ctx)
+				return e.Shutdown(ctx)
 			},
 		})
 	}

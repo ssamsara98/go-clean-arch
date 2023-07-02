@@ -3,14 +3,14 @@ package utils
 import (
 	"go-clean-arch/constants"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
-func Paginate(c *gin.Context) func(db *gorm.DB) *gorm.DB {
+func Paginate(c echo.Context) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		limit, _ := c.MustGet(constants.Limit).(int64)
-		page, _ := c.MustGet(constants.Page).(int64)
+		limit, _ := c.Get(constants.Limit).(int64)
+		page, _ := c.Get(constants.Page).(int64)
 
 		offset := (page - 1) * limit
 

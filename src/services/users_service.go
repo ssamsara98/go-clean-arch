@@ -6,7 +6,7 @@ import (
 	"go-clean-arch/models"
 	"go-clean-arch/src/dto"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +32,7 @@ func (s UsersService) SetPaginationScope(scope func(*gorm.DB) *gorm.DB) UsersSer
 	return s
 }
 
-func (s UsersService) GetUserList() (response gin.H, err error) {
+func (s UsersService) GetUserList() (response echo.Map, err error) {
 	var users []models.User
 	var count int64
 
@@ -41,7 +41,7 @@ func (s UsersService) GetUserList() (response gin.H, err error) {
 		return nil, err
 	}
 
-	return gin.H{"result": users, "count": count}, nil
+	return echo.Map{"result": users, "count": count}, nil
 }
 
 func (s UsersService) GetUserByID(uri *dto.GetUserByIDParams) (user models.User, err error) {

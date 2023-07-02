@@ -5,61 +5,38 @@ import (
 	"go-clean-arch/utils"
 	"net/http"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-// Router -> Gin Router
+// Router -> Echo Router
 type Router struct {
-	*gin.Engine
+	*echo.Echo
 }
 
-// NewRouter : all the routes are defined here
 func NewRouter(
 	env *lib.Env,
 	logger lib.Logger,
 ) Router {
+	e := echo.New()
 
-	// if env.Environment != "local" && env.SentryDSN != "" {
-	// 	if err := sentry.Init(sentry.ClientOptions{
-	// 		Dsn:         env.SentryDSN,
-	// 		Environment: `clean-backend-` + env.Environment,
-	// 	}); err != nil {
-	// 		logger.Infof("Sentry initialization failed: %v\n", err)
-	// 	}
-	// }
-
-	gin.DefaultWriter = logger.GetGinLogger()
-	appEnv := env.Environment
-	if appEnv == "production" {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
-		gin.SetMode(gin.DebugMode)
-	}
-
-	httpRouter := gin.Default()
-
-	httpRouter.MaxMultipartMemory = env.MaxMultipartMemory
-
-	httpRouter.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "OPTIONS", "DELETE"},
-		AllowHeaders:     []string{"*"},
-		AllowCredentials: true,
+	e.Use(middleware.CORS())
+	e.Use(middleware.Recover())
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			req := c.Request()
+			logger.Infof("method=%s uri=%s status=%d remote_address=%s user_agent=%s", req.Method, v.URI, v.Status, req.RemoteAddr, req.UserAgent())
+			return nil
+		},
 	}))
-	httpRouter.Use(gin.Recovery())
-	// httpRouter.Use(gin.Logger())
 
-	// // Attach sentry middleware
-	// httpRouter.Use(sentrygin.New(sentrygin.Options{
-	// 	Repanic: true,
-	// }))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
 
-	httpRouter.GET("/health-check", func(c *gin.Context) {
-		utils.SuccessJSON(c, http.StatusOK, "clean architecture 📺 API Up and Running")
+	e.GET("/health-check", func(c echo.Context) error {
+		return utils.SuccessJSON(c, http.StatusOK, "clean architecture 📺 API Up and Running")
 	})
 
-	return Router{
-		httpRouter,
-	}
+	return Router{e}
 }

@@ -3,20 +3,20 @@ package utils
 import (
 	"go-clean-arch/constants"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 // JSON : json response function
-func JSON(c *gin.Context, statusCode int, data any) {
-	c.JSON(statusCode, gin.H{
+func JSON(c echo.Context, statusCode int, data any) error {
+	return c.JSON(statusCode, echo.Map{
 		"statusCode": statusCode,
 		"result":     data,
 	})
 }
 
 // ErrorJSON : json error response function
-func ErrorJSON(c *gin.Context, statusCode int, data error) {
-	c.JSON(statusCode, gin.H{
+func ErrorJSON(c echo.Context, statusCode int, data error) error {
+	return c.JSON(statusCode, echo.Map{
 		"statusCode": statusCode,
 		"message":    data.Error(),
 		"error":      data,
@@ -24,23 +24,23 @@ func ErrorJSON(c *gin.Context, statusCode int, data error) {
 }
 
 // SuccessJSON : json error response function
-func SuccessJSON(c *gin.Context, statusCode int, data any) {
-	c.JSON(statusCode, gin.H{
+func SuccessJSON(c echo.Context, statusCode int, data any) error {
+	return c.JSON(statusCode, echo.Map{
 		"statusCode": statusCode,
 		"message":    data,
 	})
 }
 
 // JSONWithPagination : json response function
-func JSONWithPagination(c *gin.Context, statusCode int, response gin.H) {
-	limit, _ := c.MustGet(constants.Limit).(int64)
-	page, _ := c.MustGet(constants.Page).(int64)
+func JSONWithPagination(c echo.Context, statusCode int, response echo.Map) error {
+	limit, _ := c.Get(constants.Limit).(int64)
+	page, _ := c.Get(constants.Page).(int64)
 
-	c.JSON(
+	return c.JSON(
 		statusCode,
-		gin.H{
+		echo.Map{
 			"result": response["result"],
-			"pagination": gin.H{
+			"pagination": echo.Map{
 				"hasNext": (response["count"].(int64) - limit*page) > 0,
 				"count":   response["count"],
 			},

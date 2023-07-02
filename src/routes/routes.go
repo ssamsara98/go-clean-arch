@@ -1,13 +1,8 @@
 package routes
 
 import (
-	"errors"
 	"go-clean-arch/infrastructure"
-	"go-clean-arch/src/middlewares"
-	"go-clean-arch/utils"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
 
@@ -25,22 +20,19 @@ type IRoute interface {
 
 // Routes contains multiple routes
 type Routes struct {
-	handler             infrastructure.Router
-	rateLimitMiddleware *middlewares.RateLimitMiddleware
-	appRoutes           *AppRoutes
-	usersRoutes         *UsersRoutes
+	handler     infrastructure.Router
+	appRoutes   *AppRoutes
+	usersRoutes *UsersRoutes
 }
 
 // NewRoutes sets up routes
 func NewRoutes(
 	handler infrastructure.Router,
-	rateLimitMiddleware *middlewares.RateLimitMiddleware,
 	appRoutes *AppRoutes,
 	usersRoutes *UsersRoutes,
 ) Routes {
 	return Routes{
 		handler,
-		rateLimitMiddleware,
 		appRoutes,
 		usersRoutes,
 	}
@@ -48,18 +40,13 @@ func NewRoutes(
 
 // Setup all the route
 func (r Routes) Setup() {
-	// for _, route := range r {
-	// 	route.Setup()
-	// }
-	r.handler.Use(r.rateLimitMiddleware.Handle())
-
-	apiV1 := r.handler.Group("v1")
+	apiV1 := r.handler.Group("/v1")
 
 	r.appRoutes.Run(r.handler)
 	r.usersRoutes.Run(apiV1)
 
 	// Not Found route
-	r.handler.NoRoute(func(c *gin.Context) {
-		utils.ErrorJSON(c, http.StatusNotFound, errors.New("not found"))
-	})
+	// r.handler.NoRoute(func(c *gin.Context) {
+	// 	utils.ErrorJSON(c, http.StatusNotFound, errors.New("not found"))
+	// })
 }

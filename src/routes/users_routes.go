@@ -5,7 +5,7 @@ import (
 	"go-clean-arch/src/controllers"
 	"go-clean-arch/src/middlewares"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 type UsersRoutes struct {
@@ -26,9 +26,9 @@ func NewUsersRoutes(
 	}
 }
 
-func (u UsersRoutes) Run(handler *gin.RouterGroup) {
-	router := handler.Group("users")
+func (u UsersRoutes) Run(handler *echo.Group) {
+	router := handler.Group("/users")
 
-	router.GET("/", u.paginationMiddleware.Handle(), u.usersController.GetUserList)
+	router.GET("/", u.usersController.GetUserList, u.paginationMiddleware.Handle())
 	router.GET("/:userId", u.usersController.GetUserByID)
 }

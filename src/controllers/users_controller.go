@@ -7,7 +7,7 @@ import (
 	"go-clean-arch/utils"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 type UsersController struct {
@@ -25,29 +25,26 @@ func NewUsersController(
 	}
 }
 
-func (u UsersController) GetUserList(c *gin.Context) {
+func (u UsersController) GetUserList(c echo.Context) error {
 	users, err := u.usersService.SetPaginationScope(utils.Paginate(c)).GetUserList()
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusInternalServerError, err)
-		return
+		return utils.ErrorJSON(c, http.StatusInternalServerError, err)
 	}
 
-	utils.JSONWithPagination(c, http.StatusOK, users)
+	return utils.JSONWithPagination(c, http.StatusOK, users)
 }
 
-func (u UsersController) GetUserByID(c *gin.Context) {
+func (u UsersController) GetUserByID(c echo.Context) error {
 	var uri dto.GetUserByIDParams
-	err := c.ShouldBindUri(&uri)
+	err := c.Bind(&uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
-		return
+		return utils.ErrorJSON(c, http.StatusBadRequest, err)
 	}
 
 	user, err := u.usersService.GetUserByID(&uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusNotFound, err)
-		return
+		return utils.ErrorJSON(c, http.StatusNotFound, err)
 	}
 
-	c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, user)
 }
