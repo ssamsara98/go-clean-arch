@@ -21,4 +21,4 @@
 .env_variables.yaml
 app.yaml
 wire_gen.go
-__debug_bin
+__debug_bin*

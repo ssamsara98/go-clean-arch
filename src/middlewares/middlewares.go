@@ -8,6 +8,7 @@ var Module = fx.Options(
 	fx.Provide(NewRateLimitMiddleware),
 	fx.Provide(NewPaginationMiddleware),
 	fx.Provide(NewJWTAuthMiddleware),
+	fx.Provide(NewDBTransactionMiddleware),
 )
 
 // IMiddleware middleware interface

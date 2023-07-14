@@ -29,6 +29,12 @@ func NewAppService(
 	}
 }
 
+// WithTrx delegates transaction to repository database
+func (app AppService) WithTrx(trxHandle *gorm.DB) AppService {
+	app.db = app.db.WithTrx(trxHandle)
+	return app
+}
+
 func (app AppService) Home() string {
 	return "Hello, World!"
 }
@@ -41,10 +47,10 @@ func (app AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
 		return nil
 	}
 
-	if *user.Email == body.Email {
+	if user.Email == body.Email {
 		_ = result.AddError(errors.New("email already exist"))
 	}
-	if *user.Username == body.Username {
+	if user.Username == body.Username {
 		_ = result.AddError(errors.New("username already exist"))
 	}
 	return result.Error
@@ -54,8 +60,8 @@ func (app AppService) Register(body *dto.RegisterUserDto) (*models.User, error) 
 	hashedPassword := utils.HashPassword([]byte(body.Password))
 
 	user := models.User{
-		Email:    &body.Email,
-		Username: &body.Username,
+		Email:    body.Email,
+		Username: body.Username,
 		Password: string(hashedPassword),
 		Name:     body.Name,
 	}
@@ -69,19 +75,22 @@ func (app AppService) Register(body *dto.RegisterUserDto) (*models.User, error) 
 }
 
 func (app AppService) Login(body *dto.LoginUserDto) (*infrastructure.Token, error) {
-	var user models.User
-	res := app.db.Where("email = ? OR username = ?", body.UserSession, body.UserSession).First(&user)
+	user := new(models.User)
+	res := app.db.Where("email = ? OR username = ?", body.UserSession, body.UserSession).First(user)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, errors.New("email/username or password is invalid")
 	}
 
-	err := utils.CompareHash([]byte(user.Password), []byte(body.Password))
+	err := utils.CompareHash(user.Password, body.Password)
 	if err != nil {
 		return nil, errors.New("email/username or password is invalid")
 	}
 
 	// create token
-	token := app.jwtAuthHelper.CreateToken(user)
+	token, err := app.jwtAuthHelper.CreateToken(user)
+	if err != nil {
+		return nil, err
+	}
 
 	return token, nil
 }

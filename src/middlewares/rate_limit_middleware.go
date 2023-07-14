@@ -42,7 +42,7 @@ func (lm RateLimitMiddleware) Handle(options ...Option) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := c.ClientIP() // Gets cient IP Address
 
-		lm.logger.Info("Setting up rate limit middleware")
+		lm.logger.Debug("Setting up rate limit middleware")
 
 		// Setting up rate limit
 		// Limit -> # of API Calls
