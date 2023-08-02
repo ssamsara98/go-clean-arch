@@ -1,6 +1,10 @@
 package lib
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 type Env struct {
 	ServerPort  string `mapstructure:"SERVER_PORT"`
@@ -14,8 +18,10 @@ type Env struct {
 	DBName     string `mapstructure:"DB_NAME"`
 	DBType     string `mapstructure:"DB_TYPE"`
 
-	MaxMultipartMemory int64  `mapstructure:"MAX_MULTIPART_MEMORY"`
-	JWTSecret          string `mapstructure:"JWT_SECRET"`
+	MaxMultipartMemory   int64         `mapstructure:"MAX_MULTIPART_MEMORY"`
+	JWTSecret            string        `mapstructure:"JWT_SECRET"`
+	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 
 	TimeZone      string `mapstructure:"TIMEZONE"`
 	AdminEmail    string `mapstructure:"ADMIN_EMAIL"`
@@ -31,6 +37,8 @@ func GetEnv() Env {
 }
 
 func NewEnv(logger Logger) *Env {
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
 	viper.SetConfigFile(".env")
 
 	err := viper.ReadInConfig()

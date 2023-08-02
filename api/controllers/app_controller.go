@@ -2,12 +2,11 @@ package controllers
 
 import (
 	"errors"
+	"go-clean-arch/api/dto"
+	"go-clean-arch/api/services"
 	"go-clean-arch/constants"
-	"go-clean-arch/infrastructure"
 	"go-clean-arch/lib"
 	"go-clean-arch/models"
-	"go-clean-arch/src/dto"
-	"go-clean-arch/src/services"
 	"go-clean-arch/utils"
 	"net/http"
 	"strings"
@@ -17,20 +16,17 @@ import (
 )
 
 type AppController struct {
-	logger        lib.Logger
-	appService    *services.AppService
-	jwtAuthHelper *infrastructure.JWTAuthHelper
+	logger     lib.Logger
+	appService *services.AppService
 }
 
 func NewAppController(
 	logger lib.Logger,
 	appService *services.AppService,
-	jwtAuthHelper *infrastructure.JWTAuthHelper,
 ) *AppController {
 	return &AppController{
 		logger,
 		appService,
-		jwtAuthHelper,
 	}
 }
 
@@ -88,7 +84,7 @@ func (app AppController) Me(c *gin.Context) {
 }
 
 func (app AppController) UpdateProfile(c *gin.Context) {
-	var body dto.UpdateProfile
+	var body dto.UpdateProfileDto
 	err := c.Bind(&body)
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusBadRequest, err)
@@ -106,21 +102,36 @@ func (app AppController) UpdateProfile(c *gin.Context) {
 }
 
 func (app AppController) TokenCheck(c *gin.Context) {
-	authHeader := c.Request.Header.Get("Authorization")
-	t := strings.Split(authHeader, "Bearer ")
-
-	if len(t) == 2 {
-		authToken := t[1]
-		claims, err := app.jwtAuthHelper.VerifyToken(authToken)
-		if err != nil || claims == nil {
-			app.logger.Error("claims error")
-			utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("you are not authorized"))
-			return
-		}
-
-		utils.SuccessJSON(c, http.StatusOK, "success")
+	authorizationHeader := c.Request.Header.Get("Authorization")
+	if !strings.Contains(authorizationHeader, constants.TokenPrefix) {
+		utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("invalid token"))
 		return
 	}
 
-	utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("you are not authorized"))
+	tokenString := strings.Replace(authorizationHeader, constants.TokenPrefix+" ", "", -1)
+
+	claims, err := app.appService.TokenCheck(tokenString)
+	if err != nil || claims == nil {
+		utils.ErrorJSON(c, http.StatusUnauthorized, err)
+		return
+	}
+
+	utils.JSON(c, http.StatusOK, claims)
+}
+
+func (app AppController) TokenRenew(c *gin.Context) {
+	var body dto.RenewAccessTokenReqDto
+	err := c.ShouldBindJSON(&body)
+	if err != nil {
+		utils.ErrorJSON(c, http.StatusBadRequest, err)
+		return
+	}
+
+	tokens, err := app.appService.TokenRenew(&body)
+	if err != nil {
+		utils.ErrorJSON(c, http.StatusUnauthorized, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, tokens)
 }

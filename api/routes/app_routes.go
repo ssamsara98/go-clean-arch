@@ -1,9 +1,9 @@
 package routes
 
 import (
+	"go-clean-arch/api/controllers"
+	"go-clean-arch/api/middlewares"
 	"go-clean-arch/infrastructure"
-	"go-clean-arch/src/controllers"
-	"go-clean-arch/src/middlewares"
 )
 
 type AppRoutes struct {
@@ -31,4 +31,5 @@ func (app AppRoutes) Run(handler infrastructure.Router) {
 	handler.GET("/me", app.jwtAuthMiddleware.Handle(), app.appController.Me)
 	handler.PATCH("/me", app.jwtAuthMiddleware.Handle(), app.appController.UpdateProfile)
 	handler.GET("/token-check", app.appController.TokenCheck)
+	handler.GET("/token-renew", app.appController.TokenRenew)
 }

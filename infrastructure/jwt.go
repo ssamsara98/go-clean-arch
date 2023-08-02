@@ -10,11 +10,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-type Token struct {
-	Type  string `json:"type"`
-	Token string `json:"token"`
-}
-
 // JWTAuthHelper service relating to authorization
 type JWTAuthHelper struct {
 	env    *lib.Env
@@ -26,6 +21,7 @@ type Claims struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
+	Type     string `json:"type"`
 	jwt.RegisteredClaims
 }
 
@@ -42,13 +38,14 @@ func NewJWTAuthHelper(
 }
 
 // CreateToken creates jwt auth token
-func (j JWTAuthHelper) CreateToken(user *models.User) (*Token, error) {
+func (j JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, tokenType string) (string, error) {
 	iat := time.Now()
-	exp := iat.Add(30 * 24 * time.Hour)
+	exp := iat.Add(duration)
 	claims := &Claims{
 		Name:     user.Name,
 		Email:    user.Email,
 		Username: user.Username,
+		Type:     tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			// In JWT, the expiry time is expressed as unix milliseconds
 			IssuedAt:  jwt.NewNumericDate(iat),
@@ -61,21 +58,17 @@ func (j JWTAuthHelper) CreateToken(user *models.User) (*Token, error) {
 	tokenString, err := token.SignedString([]byte(j.env.JWTSecret))
 	if err != nil {
 		j.logger.Error("jwt validation failed: ", err)
-		return nil, fmt.Errorf("jwt validation failed: %s", err)
+		return "", fmt.Errorf("jwt validation failed: %s", err)
 	}
 
-	return &Token{
-		Type:  "Bearer",
-		Token: tokenString,
-	}, nil
+	return tokenString, nil
 }
 
 // Authorize authorizes the generated token
 func (j JWTAuthHelper) VerifyToken(tokenString string) (*Claims, error) {
 	claims := new(Claims)
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(j.env.JWTSecret), nil
-	})
+	var keyfunc jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return []byte(j.env.JWTSecret), nil }
+	token, err := jwt.ParseWithClaims(tokenString, claims, keyfunc)
 
 	if token.Valid {
 		return claims, nil

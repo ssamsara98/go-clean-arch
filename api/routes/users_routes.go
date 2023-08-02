@@ -1,9 +1,9 @@
 package routes
 
 import (
+	"go-clean-arch/api/controllers"
+	"go-clean-arch/api/middlewares"
 	"go-clean-arch/lib"
-	"go-clean-arch/src/controllers"
-	"go-clean-arch/src/middlewares"
 
 	"github.com/gin-gonic/gin"
 )

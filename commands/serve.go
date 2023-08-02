@@ -2,10 +2,10 @@ package commands
 
 import (
 	"context"
+	"go-clean-arch/api/middlewares"
+	"go-clean-arch/api/routes"
 	"go-clean-arch/infrastructure"
 	"go-clean-arch/lib"
-	"go-clean-arch/src/middlewares"
-	"go-clean-arch/src/routes"
 	"net"
 	"net/http"
 	"time"
@@ -87,7 +87,7 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 				go func() {
 					err := srv.Serve(ln)
 					if err != nil {
-						logger.Info(err)
+						logger.Error(err)
 					}
 				}()
 				return nil

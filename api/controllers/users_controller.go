@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"go-clean-arch/api/dto"
+	"go-clean-arch/api/services"
 	"go-clean-arch/lib"
-	"go-clean-arch/src/dto"
-	"go-clean-arch/src/services"
 	"go-clean-arch/utils"
 	"net/http"
 

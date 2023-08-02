@@ -2,8 +2,8 @@ package routes
 
 import (
 	"errors"
+	"go-clean-arch/api/middlewares"
 	"go-clean-arch/infrastructure"
-	"go-clean-arch/src/middlewares"
 	"go-clean-arch/utils"
 	"net/http"
 

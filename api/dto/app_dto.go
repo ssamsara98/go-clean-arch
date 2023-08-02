@@ -14,7 +14,11 @@ type LoginUserDto struct {
 	Password    string `form:"password" binding:"required"`
 }
 
-type UpdateProfile struct {
+type UpdateProfileDto struct {
 	Name      string     `form:"name"`
 	Birthdate *time.Time `form:"birthdate" time_format:"xxxx-xx-xx"`
+}
+
+type RenewAccessTokenReqDto struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
 }

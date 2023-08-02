@@ -22,7 +22,10 @@ const (
 	RateLimit = "RateLimit"
 
 	// Token -> bearer token
-	Token = "Token"
+	Token        = "Token"
+	TokenPrefix  = "Bearer"
+	TokenAccess  = "Access"
+	TokenRefresh = "Refresh"
 
 	// User -> user
 	User = "User"

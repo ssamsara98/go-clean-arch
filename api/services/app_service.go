@@ -2,27 +2,31 @@ package services
 
 import (
 	"errors"
+	"go-clean-arch/api/dto"
+	"go-clean-arch/constants"
 	"go-clean-arch/infrastructure"
 	"go-clean-arch/lib"
 	"go-clean-arch/models"
-	"go-clean-arch/src/dto"
 	"go-clean-arch/utils"
 
 	"gorm.io/gorm"
 )
 
 type AppService struct {
+	env           *lib.Env
 	logger        lib.Logger
 	db            infrastructure.Database
 	jwtAuthHelper *infrastructure.JWTAuthHelper
 }
 
 func NewAppService(
+	env *lib.Env,
 	logger lib.Logger,
 	db infrastructure.Database,
 	jwtAuthHelper *infrastructure.JWTAuthHelper,
 ) *AppService {
 	return &AppService{
+		env,
 		logger,
 		db,
 		jwtAuthHelper,
@@ -74,7 +78,13 @@ func (app AppService) Register(body *dto.RegisterUserDto) (*models.User, error) 
 	return &user, nil
 }
 
-func (app AppService) Login(body *dto.LoginUserDto) (*infrastructure.Token, error) {
+type Tokens struct {
+	Type         string `json:"type"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+func (app AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
 	user := new(models.User)
 	res := app.db.Where("email = ? OR username = ?", body.UserSession, body.UserSession).First(user)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -87,15 +97,25 @@ func (app AppService) Login(body *dto.LoginUserDto) (*infrastructure.Token, erro
 	}
 
 	// create token
-	token, err := app.jwtAuthHelper.CreateToken(user)
+	accessToken, err := app.jwtAuthHelper.CreateToken(user, app.env.AccessTokenDuration, constants.TokenAccess)
+	if err != nil {
+		return nil, err
+	}
+	refreshToken, err := app.jwtAuthHelper.CreateToken(user, app.env.RefreshTokenDuration, constants.TokenRefresh)
 	if err != nil {
 		return nil, err
 	}
 
-	return token, nil
+	tokens := &Tokens{
+		Type:         constants.TokenPrefix,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	return tokens, nil
 }
 
-func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfile) error {
+func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error {
 	user := &models.User{
 		ModelBase: lib.ModelBase{ID: id},
 		Name:      body.Name,
@@ -108,4 +128,48 @@ func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfile) error {
 	}
 
 	return nil
+}
+
+func (app AppService) TokenCheck(accessToken string) (*infrastructure.Claims, error) {
+	claims, err := app.jwtAuthHelper.VerifyToken(accessToken)
+	if err != nil || claims == nil {
+		app.logger.Error("claims error")
+		return nil, err
+	}
+	return claims, nil
+}
+
+func (app AppService) TokenRenew(body *dto.RenewAccessTokenReqDto) (*Tokens, error) {
+	claims, err := app.jwtAuthHelper.VerifyToken(body.RefreshToken)
+	if err != nil || claims == nil {
+		app.logger.Error("claims error")
+		return nil, err
+	}
+	if claims.Type != constants.TokenRefresh {
+		return nil, errors.New("wrong token type")
+	}
+
+	user := new(models.User)
+	res := app.db.Where("id = ?", claims.Subject).First(user)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, errors.New("userId not found")
+	}
+
+	// create token
+	accessToken, err := app.jwtAuthHelper.CreateToken(user, app.env.AccessTokenDuration, constants.TokenAccess)
+	if err != nil {
+		return nil, err
+	}
+	refreshToken, err := app.jwtAuthHelper.CreateToken(user, app.env.RefreshTokenDuration, constants.TokenRefresh)
+	if err != nil {
+		return nil, err
+	}
+
+	tokens := &Tokens{
+		Type:         constants.TokenPrefix,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	return tokens, nil
 }

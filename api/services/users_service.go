@@ -1,10 +1,10 @@
 package services
 
 import (
+	"go-clean-arch/api/dto"
 	"go-clean-arch/infrastructure"
 	"go-clean-arch/lib"
 	"go-clean-arch/models"
-	"go-clean-arch/src/dto"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
