@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {
+      "name": "Attach to Remote",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "port": 4002,
+      "host": "127.0.0.1",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
