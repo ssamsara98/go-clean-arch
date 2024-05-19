@@ -1,6 +1,10 @@
 # Go Clean Architecture
 
-Clean Architecture with [Gin Web Framework](https://github.com/gin-gonic/gin)
+Clean Architecture with
+
+- [dipeshdulal](https://github.com/dipeshdulal/clean-gin)
+- [wesionaryTEAM](https://github.com/wesionaryTEAM/go_clean_architecture)
+- [Gin Web Framework](https://github.com/gin-gonic/gin)
 
 ## Linter setup
 

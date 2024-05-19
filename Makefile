@@ -1,7 +1,7 @@
 include .env
 export
 
-MIGRATE=docker-compose exec web sql-migrate
+MIGRATE=docker compose -f ./docker/compose.yml exec web sql-migrate
 
 ifeq ($(p),host)
 	MIGRATE=sql-migrate
@@ -34,3 +34,13 @@ lint-setup:
 	pre-commit autoupdate
 
 .PHONY: migrate-status migrate-up migrate-down redo create lint-setup
+
+# docker compose
+dc:
+	docker compose -f ./docker/compose.yml $(ARGS)
+
+dc-up:
+	docker compose -f ./docker/compose.yml up -d $(ARGS)
+
+dc-down:
+	docker compose -f ./docker/compose.yml down $(ARGS)

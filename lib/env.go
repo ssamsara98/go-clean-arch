@@ -19,7 +19,8 @@ type Env struct {
 	DBType     string `mapstructure:"DB_TYPE"`
 
 	MaxMultipartMemory   int64         `mapstructure:"MAX_MULTIPART_MEMORY"`
-	JWTSecret            string        `mapstructure:"JWT_SECRET"`
+	JWTAccessSecret      string        `mapstructure:"JWT_ACCESS_SECRET"`
+	JWTRefreshSecret     string        `mapstructure:"JWT_REFRESH_SECRET"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 

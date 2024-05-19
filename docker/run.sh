@@ -3,6 +3,7 @@ while true; do
     dlv debug --headless --log --listen=:2345 --api-version=2 --accept-multiclient --continue -- app:serve &
 
     PID=$!
+    echo "[run.sh] PID: ${PID}"
 
     inotifywait -e modify -e move -e create -e delete -e attrib --exclude '(__debug_bin|\.git)' -r .
 

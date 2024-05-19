@@ -1,34 +1,35 @@
-version: "3.3"
+name: goca
 
 services:
   web:
+    # container_name: clean-arch-web
+    image: ssamsara98/go-clean-arch:dev
     build:
-      context: .
+      context: ../
       dockerfile: ./docker/web.Dockerfile
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
       - ${DEBUG_PORT}:2345
     volumes:
-      - .:/app
-    env_file: .env
-    container_name: clean-arch-web
+      - ..:/app
+    env_file: ../.env
     security_opt:
       - seccomp:unconfined
     depends_on:
-      database:
+      postgres:
         condition: service_healthy
 
-  database:
+  postgres:
+    # container_name: clean-arch-db
     image: postgres:14-alpine
     environment:
       POSTGRES_USER: "${DB_USER}"
       POSTGRES_PASSWORD: "${DB_PASS}"
       POSTGRES_DB: "${DB_NAME}"
-    container_name: clean-arch-db
     ports:
-      - 54321:5432
+      - ${POSTGRES_PORT}:5432
     volumes:
-      - clean-arch-db:/var/lib/postgresql/data
+      - goca-db:/var/lib/postgresql/data
     healthcheck:
       test:
         [
@@ -40,9 +41,9 @@ services:
       retries: 3
 
   adminer:
-    image: adminer
+    image: adminer:4.8.1
     ports:
       - ${ADMINER_PORT}:8080
 
 volumes:
-  clean-arch-db:
+  goca-db:

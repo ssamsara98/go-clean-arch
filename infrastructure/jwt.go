@@ -55,7 +55,7 @@ func (j JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, to
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte(j.env.JWTSecret))
+	tokenString, err := token.SignedString([]byte(j.env.JWTAccessSecret))
 	if err != nil {
 		j.logger.Error("jwt validation failed: ", err)
 		return "", fmt.Errorf("jwt validation failed: %s", err)
@@ -67,7 +67,7 @@ func (j JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, to
 // Authorize authorizes the generated token
 func (j JWTAuthHelper) VerifyToken(tokenString string) (*Claims, error) {
 	claims := new(Claims)
-	var keyfunc jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return []byte(j.env.JWTSecret), nil }
+	var keyfunc jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return []byte(j.env.JWTAccessSecret), nil }
 	token, err := jwt.ParseWithClaims(tokenString, claims, keyfunc)
 
 	if token.Valid {
