@@ -14,15 +14,15 @@ import (
 
 type AppService struct {
 	env           *lib.Env
-	logger        lib.Logger
-	db            infrastructure.Database
+	logger        *lib.Logger
+	db            *infrastructure.Database
 	jwtAuthHelper *infrastructure.JWTAuthHelper
 }
 
 func NewAppService(
 	env *lib.Env,
-	logger lib.Logger,
-	db infrastructure.Database,
+	logger *lib.Logger,
+	db *infrastructure.Database,
 	jwtAuthHelper *infrastructure.JWTAuthHelper,
 ) *AppService {
 	return &AppService{
@@ -34,16 +34,16 @@ func NewAppService(
 }
 
 // WithTrx delegates transaction to repository database
-func (app AppService) WithTrx(trxHandle *gorm.DB) AppService {
+func (app *AppService) WithTrx(trxHandle *gorm.DB) *AppService {
 	app.db = app.db.WithTrx(trxHandle)
 	return app
 }
 
-func (app AppService) Home() string {
+func (app *AppService) Home() string {
 	return "Hello, World!"
 }
 
-func (app AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
+func (app *AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
 	var user models.User
 
 	result := app.db.Where("email = ?", body.Email).Or("username = ?", body.Username).First(&user)
@@ -60,7 +60,7 @@ func (app AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
 	return result.Error
 }
 
-func (app AppService) Register(body *dto.RegisterUserDto) (*models.User, error) {
+func (app *AppService) Register(body *dto.RegisterUserDto) (*models.User, error) {
 	hashedPassword := utils.HashPassword([]byte(body.Password))
 
 	user := models.User{
@@ -84,7 +84,7 @@ type Tokens struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-func (app AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
+func (app *AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
 	user := new(models.User)
 	res := app.db.Where("email = ? OR username = ?", body.UserSession, body.UserSession).First(user)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -115,7 +115,7 @@ func (app AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
 	return tokens, nil
 }
 
-func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error {
+func (app *AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error {
 	user := &models.User{
 		ModelBase: lib.ModelBase{ID: id},
 		Name:      body.Name,
@@ -130,7 +130,7 @@ func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error {
 	return nil
 }
 
-func (app AppService) TokenCheck(accessToken string) (*infrastructure.Claims, error) {
+func (app *AppService) TokenCheck(accessToken string) (*infrastructure.Claims, error) {
 	claims, err := app.jwtAuthHelper.VerifyToken(accessToken)
 	if err != nil || claims == nil {
 		app.logger.Error("claims error")
@@ -139,7 +139,7 @@ func (app AppService) TokenCheck(accessToken string) (*infrastructure.Claims, er
 	return claims, nil
 }
 
-func (app AppService) TokenRenew(body *dto.RenewAccessTokenReqDto) (*Tokens, error) {
+func (app *AppService) TokenRenew(body *dto.RenewAccessTokenReqDto) (*Tokens, error) {
 	claims, err := app.jwtAuthHelper.VerifyToken(body.RefreshToken)
 	if err != nil || claims == nil {
 		app.logger.Error("claims error")

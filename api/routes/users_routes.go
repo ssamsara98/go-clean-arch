@@ -9,13 +9,13 @@ import (
 )
 
 type UsersRoutes struct {
-	logger               lib.Logger
+	logger               *lib.Logger
 	paginationMiddleware *middlewares.PaginationMiddleware
 	usersController      *controllers.UsersController
 }
 
 func NewUsersRoutes(
-	logger lib.Logger,
+	logger *lib.Logger,
 	paginationMiddleware *middlewares.PaginationMiddleware,
 	usersController *controllers.UsersController,
 ) *UsersRoutes {

@@ -24,7 +24,7 @@ func NewAppRoutes(
 	}
 }
 
-func (app AppRoutes) Run(handler infrastructure.Router) {
+func (app AppRoutes) Run(handler *infrastructure.Router) {
 	handler.GET("/", app.appController.Home)
 	handler.POST("/register", app.dbTransactionMiddleware.Handle(), app.appController.Register)
 	handler.POST("/login", app.appController.Login)

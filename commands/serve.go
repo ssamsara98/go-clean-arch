@@ -27,16 +27,19 @@ func (s *ServeCommand) Setup(_ *cobra.Command) {}
 func (s *ServeCommand) Run() lib.CommandRunner {
 	return func(
 		env *lib.Env,
-		logger lib.Logger,
-		database infrastructure.Database,
-		middleware middlewares.Middlewares,
-		routes routes.Routes,
-		router infrastructure.Router,
+		logger *lib.Logger,
+		database *infrastructure.Database,
+		middleware *middlewares.Middlewares,
+		routes *routes.Routes,
+		router *infrastructure.Router,
 		lc fx.Lifecycle,
 	) {
-		logger.Info(`+-----------------------+`)
-		logger.Info(`| GO CLEAN ARCHITECTURE |`)
-		logger.Info(`+-----------------------+`)
+		if env.Environment == "production" {
+			logger.Info(`+-------PRODUCTION-------+`)
+		}
+		logger.Info(`+------------------------+`)
+		logger.Info(`| GO CLEAN ARCHITECTURE  |`)
+		logger.Info(`+------------------------+`)
 
 		// Using time zone as specified in env file
 		loc, _ := time.LoadLocation(env.TimeZone)
@@ -45,7 +48,7 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 		middleware.Setup()
 		routes.Setup()
 
-		// if env.Environment != "local" && env.SentryDSN != "" {
+		// if (env.Environment != "local" && env.Environment != "development") && env.SentryDSN != "" {
 		// 	err := sentry.Init(sentry.ClientOptions{
 		// 		Dsn:              env.SentryDSN,
 		// 		AttachStacktrace: true,

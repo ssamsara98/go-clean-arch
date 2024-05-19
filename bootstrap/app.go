@@ -25,8 +25,8 @@ type App struct {
 }
 
 // NewApp creates new root command
-func NewApp() App {
-	cmd := App{
+func NewApp() *App {
+	cmd := &App{
 		Command: rootCmd,
 	}
 	cmd.AddCommand(commands.GetSubCommands(CommonModules)...)

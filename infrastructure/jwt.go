@@ -13,8 +13,8 @@ import (
 // JWTAuthHelper service relating to authorization
 type JWTAuthHelper struct {
 	env    *lib.Env
-	logger lib.Logger
-	// db     Database
+	logger *lib.Logger
+	// db     *Database
 }
 
 type Claims struct {
@@ -27,8 +27,8 @@ type Claims struct {
 
 func NewJWTAuthHelper(
 	env *lib.Env,
-	logger lib.Logger,
-	// db Database,
+	logger *lib.Logger,
+	// db *Database,
 ) *JWTAuthHelper {
 	return &JWTAuthHelper{
 		env,
@@ -38,7 +38,7 @@ func NewJWTAuthHelper(
 }
 
 // CreateToken creates jwt auth token
-func (j JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, tokenType string) (string, error) {
+func (j *JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, tokenType string) (string, error) {
 	iat := time.Now()
 	exp := iat.Add(duration)
 	claims := &Claims{
@@ -65,7 +65,7 @@ func (j JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, to
 }
 
 // Authorize authorizes the generated token
-func (j JWTAuthHelper) VerifyToken(tokenString string) (*Claims, error) {
+func (j *JWTAuthHelper) VerifyToken(tokenString string) (*Claims, error) {
 	claims := new(Claims)
 	var keyfunc jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return []byte(j.env.JWTAccessSecret), nil }
 	token, err := jwt.ParseWithClaims(tokenString, claims, keyfunc)

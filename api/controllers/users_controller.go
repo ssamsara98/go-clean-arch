@@ -11,12 +11,12 @@ import (
 )
 
 type UsersController struct {
-	logger       lib.Logger
+	logger       *lib.Logger
 	usersService *services.UsersService
 }
 
 func NewUsersController(
-	logger lib.Logger,
+	logger *lib.Logger,
 	usersService *services.UsersService,
 ) *UsersController {
 	return &UsersController{
@@ -25,7 +25,7 @@ func NewUsersController(
 	}
 }
 
-func (u UsersController) GetUserList(c *gin.Context) {
+func (u *UsersController) GetUserList(c *gin.Context) {
 	users, err := u.usersService.SetPaginationScope(utils.Paginate(c)).GetUserList()
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusInternalServerError, err)
@@ -35,7 +35,7 @@ func (u UsersController) GetUserList(c *gin.Context) {
 	utils.JSONWithPagination(c, http.StatusOK, users)
 }
 
-func (u UsersController) GetUserByID(c *gin.Context) {
+func (u *UsersController) GetUserByID(c *gin.Context) {
 	var uri dto.GetUserByIDParams
 	err := c.ShouldBindUri(&uri)
 	if err != nil {

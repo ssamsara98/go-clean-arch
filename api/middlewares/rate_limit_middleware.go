@@ -24,11 +24,11 @@ type RateLimitOption struct {
 type Option func(*RateLimitOption)
 
 type RateLimitMiddleware struct {
-	logger lib.Logger
+	logger *lib.Logger
 	option RateLimitOption
 }
 
-func NewRateLimitMiddleware(logger lib.Logger) *RateLimitMiddleware {
+func NewRateLimitMiddleware(logger *lib.Logger) *RateLimitMiddleware {
 	return &RateLimitMiddleware{
 		logger: logger,
 		option: RateLimitOption{
@@ -38,7 +38,7 @@ func NewRateLimitMiddleware(logger lib.Logger) *RateLimitMiddleware {
 	}
 }
 
-func (lm RateLimitMiddleware) Handle(options ...Option) gin.HandlerFunc {
+func (lm *RateLimitMiddleware) Handle(options ...Option) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := c.ClientIP() // Gets cient IP Address
 

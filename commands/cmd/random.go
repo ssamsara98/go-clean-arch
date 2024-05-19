@@ -21,7 +21,7 @@ func (r *RandomCommand) Setup(cmd *cobra.Command) {
 }
 
 func (r *RandomCommand) Run() lib.CommandRunner {
-	return func(l lib.Logger) {
+	return func(l *lib.Logger) {
 		l.Info("running random command")
 		rand.New(rand.NewSource(time.Now().Unix()))
 		var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")

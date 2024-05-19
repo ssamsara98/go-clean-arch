@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"log"
 	"time"
 
 	"github.com/spf13/viper"
@@ -8,7 +9,8 @@ import (
 
 type Env struct {
 	ServerPort  string `mapstructure:"SERVER_PORT"`
-	Environment string `mapstructure:"ENVIRONMENT"`
+	Environment string `mapstructure:"ENV"`
+	LogOutput   string `mapstructure:"LOG_OUTPUT"`
 	LogLevel    string `mapstructure:"LOG_LEVEL"`
 
 	DBUsername string `mapstructure:"DB_USER"`
@@ -29,30 +31,30 @@ type Env struct {
 	AdminPassword string `mapstructure:"ADMIN_PASSWORD"`
 }
 
-var globalEnv = Env{
+var globalEnv = &Env{
 	MaxMultipartMemory: 10 << 20, // 10 MB
 }
 
-func GetEnv() Env {
+func GetEnv() *Env {
 	return globalEnv
 }
 
-func NewEnv(logger Logger) *Env {
+func NewEnv() *Env {
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 	viper.SetConfigFile(".env")
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		logger.Fatal("cannot read cofiguration", err)
+		log.Fatal("cannot read cofiguration", err)
 	}
 
 	viper.SetDefault("TIMEZONE", "UTC")
 
 	err = viper.Unmarshal(&globalEnv)
 	if err != nil {
-		logger.Fatal("environment cant be loaded: ", err)
+		log.Fatal("environment cant be loaded: ", err)
 	}
 
-	return &globalEnv
+	return globalEnv
 }

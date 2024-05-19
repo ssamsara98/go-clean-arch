@@ -17,10 +17,10 @@ type Router struct {
 // NewRouter : all the routes are defined here
 func NewRouter(
 	env *lib.Env,
-	logger lib.Logger,
-) Router {
+	logger *lib.Logger,
+) *Router {
 
-	// if env.Environment != "local" && env.SentryDSN != "" {
+	// if (env.Environment != "local" && env.Environment != "development") && env.SentryDSN != "" {
 	// 	if err := sentry.Init(sentry.ClientOptions{
 	// 		Dsn:         env.SentryDSN,
 	// 		Environment: `clean-backend-` + env.Environment,
@@ -59,7 +59,8 @@ func NewRouter(
 		utils.SuccessJSON(c, http.StatusOK, "clean architecture 📺 API Up and Running")
 	})
 
-	return Router{
+	router := &Router{
 		httpRouter,
 	}
+	return router
 }

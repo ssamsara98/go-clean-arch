@@ -16,12 +16,12 @@ import (
 )
 
 type AppController struct {
-	logger     lib.Logger
+	logger     *lib.Logger
 	appService *services.AppService
 }
 
 func NewAppController(
-	logger lib.Logger,
+	logger *lib.Logger,
 	appService *services.AppService,
 ) *AppController {
 	return &AppController{
@@ -30,12 +30,12 @@ func NewAppController(
 	}
 }
 
-func (app AppController) Home(c *gin.Context) {
+func (app *AppController) Home(c *gin.Context) {
 	message := app.appService.Home()
 	utils.SuccessJSON(c, http.StatusOK, message)
 }
 
-func (app AppController) Register(c *gin.Context) {
+func (app *AppController) Register(c *gin.Context) {
 	var body dto.RegisterUserDto
 	err := c.Bind(&body)
 	if err != nil {
@@ -60,7 +60,7 @@ func (app AppController) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-func (app AppController) Login(c *gin.Context) {
+func (app *AppController) Login(c *gin.Context) {
 	var body dto.LoginUserDto
 	err := c.Bind(&body)
 	if err != nil {
@@ -77,13 +77,13 @@ func (app AppController) Login(c *gin.Context) {
 	c.JSON(http.StatusCreated, token)
 }
 
-func (app AppController) Me(c *gin.Context) {
+func (app *AppController) Me(c *gin.Context) {
 	user, _ := c.MustGet(constants.User).(*models.User)
 
 	c.JSON(http.StatusOK, user)
 }
 
-func (app AppController) UpdateProfile(c *gin.Context) {
+func (app *AppController) UpdateProfile(c *gin.Context) {
 	var body dto.UpdateProfileDto
 	err := c.Bind(&body)
 	if err != nil {
@@ -101,7 +101,7 @@ func (app AppController) UpdateProfile(c *gin.Context) {
 	utils.SuccessJSON(c, http.StatusOK, "success")
 }
 
-func (app AppController) TokenCheck(c *gin.Context) {
+func (app *AppController) TokenCheck(c *gin.Context) {
 	authorizationHeader := c.Request.Header.Get("Authorization")
 	if !strings.Contains(authorizationHeader, constants.TokenPrefix) {
 		utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("invalid token"))
@@ -119,7 +119,7 @@ func (app AppController) TokenCheck(c *gin.Context) {
 	utils.JSON(c, http.StatusOK, claims)
 }
 
-func (app AppController) TokenRenew(c *gin.Context) {
+func (app *AppController) TokenRenew(c *gin.Context) {
 	var body dto.RenewAccessTokenReqDto
 	err := c.ShouldBindJSON(&body)
 	if err != nil {
