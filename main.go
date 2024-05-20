@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-clean-arch/bootstrap"
+	"go-clean-arch/src/bootstrap"
 
 	"github.com/joho/godotenv"
 )
