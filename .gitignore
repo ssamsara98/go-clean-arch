@@ -15,10 +15,16 @@
 # vendor/
 
 # Custom
+.DS_Store
 .env
 .env.local
 .env.*.local
 .env_variables.yaml
+.venv/
+venv/
+log/access.log
+log
 app.yaml
 wire_gen.go
 __debug_bin*
+serviceAccountKey.json

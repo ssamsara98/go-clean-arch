@@ -16,6 +16,15 @@ migrate-up:
 migrate-down:
 	$(MIGRATE) down
 
+seed-status:
+	$(MIGRATE) status --env=seed
+
+seed-up:
+	$(MIGRATE) up --env=seed
+
+seed-down:
+	$(MIGRATE) down --env=seed
+
 redo:
 	@read -p  "Are you sure to reapply the last migration? [y/n]" -n 1 -r; \
 	if [[ $$REPLY =~ ^[Yy] ]]; \
@@ -27,9 +36,12 @@ create:
 	@read -p  "What is the name of migration?" NAME; \
 	${MIGRATE} new $$NAME
 
+create-venv:
+	python3 -m venv .venv
+
 lint-setup:
 	python3 -m ensurepip --upgrade
-	sudo pip3 install pre-commit
+	pip3 install pre-commit
 	pre-commit install
 	pre-commit autoupdate
 

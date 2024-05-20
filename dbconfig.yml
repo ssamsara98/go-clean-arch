@@ -1,4 +1,10 @@
+seed:
+  dialect: postgres
+  datasource: user=${DB_USER} password=${DB_PASS} host=${DB_HOST} port=${DB_PORT} dbname=${DB_NAME} sslmode=disable
+  dir: seeders/
+  table: gorp_seeds
+
 development:
-    dialect: postgres
-    datasource: user=${DB_USER} password=${DB_PASS} host=${DB_HOST} port=${DB_PORT} dbname=${DB_NAME} sslmode=disable
-    dir: migration/
+  dialect: postgres
+  datasource: user=${DB_USER} password=${DB_PASS} host=${DB_HOST} port=${DB_PORT} dbname=${DB_NAME} sslmode=disable
+  dir: migration/
