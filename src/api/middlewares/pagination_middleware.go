@@ -21,12 +21,12 @@ func (p *PaginationMiddleware) Handle() gin.HandlerFunc {
 		p.logger.Debug("setting up pagination middleware")
 
 		limit, err := strconv.ParseInt(c.Query("limit"), 10, 0)
-		if err != nil {
+		if err != nil || limit < 5 {
 			limit = 10
 		}
 
 		page, err := strconv.ParseInt(c.Query("page"), 10, 0)
-		if err != nil {
+		if err != nil || limit < 1 {
 			page = 1
 		}
 

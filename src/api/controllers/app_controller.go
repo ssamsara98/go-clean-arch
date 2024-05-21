@@ -1,15 +1,14 @@
 package controllers
 
 import (
-	"errors"
 	"go-clean-arch/src/api/dto"
 	"go-clean-arch/src/api/services"
 	"go-clean-arch/src/constants"
+	"go-clean-arch/src/infrastructure"
 	"go-clean-arch/src/lib"
 	"go-clean-arch/src/models"
 	"go-clean-arch/src/utils"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -51,13 +50,13 @@ func (app *AppController) Register(c *gin.Context) {
 
 	trxHandle, _ := c.MustGet(constants.DBTransaction).(*gorm.DB)
 
-	user, err := app.appService.WithTrx(trxHandle).Register(&body)
+	result, err := app.appService.WithTrx(trxHandle).Register(&body)
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	utils.SuccessJSON(c, http.StatusCreated, result)
 }
 
 func (app *AppController) Login(c *gin.Context) {
@@ -74,13 +73,12 @@ func (app *AppController) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, token)
+	utils.SuccessJSON(c, http.StatusCreated, token)
 }
 
 func (app *AppController) Me(c *gin.Context) {
 	user, _ := c.MustGet(constants.User).(*models.User)
-
-	c.JSON(http.StatusOK, user)
+	utils.SuccessJSON(c, http.StatusOK, user)
 }
 
 func (app *AppController) UpdateProfile(c *gin.Context) {
@@ -102,36 +100,16 @@ func (app *AppController) UpdateProfile(c *gin.Context) {
 }
 
 func (app *AppController) TokenCheck(c *gin.Context) {
-	authorizationHeader := c.Request.Header.Get("Authorization")
-	if !strings.Contains(authorizationHeader, constants.TokenPrefix) {
-		utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("invalid token"))
-		return
-	}
-
-	tokenString := strings.Replace(authorizationHeader, constants.TokenPrefix+" ", "", -1)
-
-	claims, err := app.appService.TokenCheck(tokenString)
-	if err != nil || claims == nil {
-		utils.ErrorJSON(c, http.StatusUnauthorized, err)
-		return
-	}
-
-	utils.JSON(c, http.StatusOK, claims)
+	claims, _ := c.MustGet(constants.User).(*infrastructure.Claims)
+	utils.SuccessJSON(c, http.StatusOK, claims)
 }
 
-func (app *AppController) TokenRenew(c *gin.Context) {
-	var body dto.RenewAccessTokenReqDto
-	err := c.ShouldBindJSON(&body)
-	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
-		return
-	}
-
-	tokens, err := app.appService.TokenRenew(&body)
+func (app *AppController) TokenRefresh(c *gin.Context) {
+	user, _ := c.MustGet(constants.User).(*models.User)
+	tokens, err := app.appService.TokenRefresh(user)
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusUnauthorized, err)
 		return
 	}
-
-	c.JSON(http.StatusOK, tokens)
+	utils.SuccessJSON(c, http.StatusOK, tokens)
 }

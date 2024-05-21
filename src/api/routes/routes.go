@@ -53,9 +53,10 @@ func (r *Routes) Setup() {
 	// }
 	r.handler.Use(r.rateLimitMiddleware.Handle())
 
+	root := r.handler.Group("")
 	apiV1 := r.handler.Group("v1")
 
-	r.appRoutes.Run(r.handler)
+	r.appRoutes.Run(root)
 	r.usersRoutes.Run(apiV1)
 
 	// Not Found route

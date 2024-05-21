@@ -6,7 +6,6 @@ import (
 	"go-clean-arch/src/lib"
 	"go-clean-arch/src/models"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -32,16 +31,16 @@ func (s *UsersService) SetPaginationScope(scope func(*gorm.DB) *gorm.DB) *UsersS
 	return s
 }
 
-func (s *UsersService) GetUserList() (response gin.H, err error) {
-	var users []models.User
+func (s *UsersService) GetUserList() (*[]models.User, *int64, error) {
+	var items []models.User
 	var count int64
 
-	err = s.db.WithTrx(s.paginationScope).Find(&users).Offset(-1).Limit(-1).Count(&count).Error
+	err := s.db.WithTrx(s.paginationScope).Find(&items).Offset(-1).Limit(-1).Count(&count).Error
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return gin.H{"result": users, "count": count}, nil
+	return &items, &count, nil
 }
 
 func (s *UsersService) GetUserByID(uri *dto.GetUserByIDParams) (user models.User, err error) {

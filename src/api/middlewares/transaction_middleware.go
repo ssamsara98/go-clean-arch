@@ -29,7 +29,7 @@ func NewDBTransactionMiddleware(
 
 // Handle -> It setup the database transaction middleware
 func (m *DBTransactionMiddleware) Handle() gin.HandlerFunc {
-	m.logger.Debug("Setting up database transaction middleware")
+	m.logger.Debug("setting up database transaction middleware")
 
 	return func(c *gin.Context) {
 		txHandle := m.db.DB.Begin()

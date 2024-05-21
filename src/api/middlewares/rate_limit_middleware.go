@@ -1,8 +1,10 @@
 package middlewares
 
 import (
+	"errors"
 	"go-clean-arch/src/constants"
 	"go-clean-arch/src/lib"
+	"go-clean-arch/src/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -68,7 +70,6 @@ func (lm *RateLimitMiddleware) Handle(options ...Option) gin.HandlerFunc {
 		// Returns the rate limit details for given identifier.
 		// FullPath is appended with IP address. `/api/users&&127.0.0.1` as key
 		context, err := instance.Get(c, c.FullPath()+"&&"+key)
-
 		if err != nil {
 			lm.logger.Panic(err.Error())
 		}
@@ -82,9 +83,8 @@ func (lm *RateLimitMiddleware) Handle(options ...Option) gin.HandlerFunc {
 
 		// Limit exceeded
 		if context.Reached {
-			c.JSON(http.StatusTooManyRequests, gin.H{
-				"message": "Rate Limit Exceed",
-			})
+			errNew := errors.New("rate limit exceed")
+			utils.ErrorJSON(c, http.StatusTooManyRequests, errNew)
 			c.Abort()
 			return
 		}

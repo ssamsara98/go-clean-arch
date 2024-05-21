@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"errors"
 	"fmt"
+	"go-clean-arch/src/constants"
 	"go-clean-arch/src/lib"
 	"go-clean-arch/src/models"
 	"time"
@@ -38,7 +39,17 @@ func NewJWTAuthHelper(
 }
 
 // CreateToken creates jwt auth token
-func (j *JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, tokenType string) (string, error) {
+func (j *JWTAuthHelper) CreateToken(user *models.User, tokenType string) (string, error) {
+	var secret string
+	var duration time.Duration
+	if tokenType == constants.TokenAccess {
+		secret = j.env.JWTAccessSecret
+		duration = j.env.AccessTokenDuration
+	} else if tokenType == constants.TokenRefresh {
+		secret = j.env.JWTRefreshSecret
+		duration = j.env.RefreshTokenDuration
+	}
+
 	iat := time.Now()
 	exp := iat.Add(duration)
 	claims := &Claims{
@@ -55,7 +66,7 @@ func (j *JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, t
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte(j.env.JWTAccessSecret))
+	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		j.logger.Error("jwt validation failed: ", err)
 		return "", fmt.Errorf("jwt validation failed: %s", err)
@@ -65,12 +76,19 @@ func (j *JWTAuthHelper) CreateToken(user *models.User, duration time.Duration, t
 }
 
 // Authorize authorizes the generated token
-func (j *JWTAuthHelper) VerifyToken(tokenString string) (*Claims, error) {
+func (j *JWTAuthHelper) VerifyToken(tokenString string, tokenType string) (*Claims, error) {
+	var secret string
+	if tokenType == constants.TokenAccess {
+		secret = j.env.JWTAccessSecret
+	} else if tokenType == constants.TokenRefresh {
+		secret = j.env.JWTRefreshSecret
+	}
+
 	claims := new(Claims)
-	var keyfunc jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return []byte(j.env.JWTAccessSecret), nil }
+	var keyfunc jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return []byte(secret), nil }
 	token, err := jwt.ParseWithClaims(tokenString, claims, keyfunc)
 
-	if token.Valid {
+	if token != nil && token.Valid {
 		return claims, nil
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {

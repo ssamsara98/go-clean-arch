@@ -141,3 +141,23 @@ go get example.com/theirmodule@latest
 go mod tidy
 ```
 </details>
+
+---
+
+Hierarchy
+
+```
+main
+bootstrap
+commands
+api
+  routes
+  middleware
+  controller
+  service
+infrastructure
+model
+lib
+utils
+constants
+```
