@@ -38,14 +38,13 @@ func (u *UsersController) GetUserList(c *gin.Context) {
 }
 
 func (u *UsersController) GetUserByID(c *gin.Context) {
-	var uri dto.GetUserByIDParams
-	err := c.ShouldBindUri(&uri)
+	uri, err := utils.BindUri[dto.GetUserByIDParams](c)
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
-	user, err := u.usersService.GetUserByID(&uri)
+	user, err := u.usersService.GetUserByID(uri)
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusNotFound, err)
 		return

@@ -26,16 +26,16 @@ func NewUsersService(
 }
 
 // PaginationScope
-func (s *UsersService) SetPaginationScope(scope func(*gorm.DB) *gorm.DB) *UsersService {
-	s.paginationScope = s.db.WithTrx(s.db.Scopes(scope)).DB
-	return s
+func (u *UsersService) SetPaginationScope(scope func(*gorm.DB) *gorm.DB) *UsersService {
+	u.paginationScope = u.db.WithTrx(u.db.Scopes(scope)).DB
+	return u
 }
 
-func (s *UsersService) GetUserList() (*[]models.User, *int64, error) {
+func (u *UsersService) GetUserList() (*[]models.User, *int64, error) {
 	var items []models.User
 	var count int64
 
-	err := s.db.WithTrx(s.paginationScope).Find(&items).Offset(-1).Limit(-1).Count(&count).Error
+	err := u.db.WithTrx(u.paginationScope).Find(&items).Offset(-1).Limit(-1).Count(&count).Error
 	if err != nil {
 		return nil, nil, err
 	}
@@ -43,6 +43,6 @@ func (s *UsersService) GetUserList() (*[]models.User, *int64, error) {
 	return &items, &count, nil
 }
 
-func (s *UsersService) GetUserByID(uri *dto.GetUserByIDParams) (user models.User, err error) {
-	return user, s.db.First(&user, "id = ?", uri.ID).Error
+func (u *UsersService) GetUserByID(uri *dto.GetUserByIDParams) (user models.User, err error) {
+	return user, u.db.First(&user, "id = ?", uri.ID).Error
 }

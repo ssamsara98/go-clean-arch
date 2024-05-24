@@ -16,6 +16,7 @@ var Module = fx.Options(
 	fx.Provide(NewRoutes),
 	fx.Provide(NewAppRoutes),
 	fx.Provide(NewUsersRoutes),
+	fx.Provide(NewPostsRoutes),
 )
 
 // Route interface
@@ -29,6 +30,7 @@ type Routes struct {
 	rateLimitMiddleware *middlewares.RateLimitMiddleware
 	appRoutes           *AppRoutes
 	usersRoutes         *UsersRoutes
+	postsRoutes         *PostsRoutes
 }
 
 // NewRoutes sets up routes
@@ -37,12 +39,14 @@ func NewRoutes(
 	rateLimitMiddleware *middlewares.RateLimitMiddleware,
 	appRoutes *AppRoutes,
 	usersRoutes *UsersRoutes,
+	postsRoutes *PostsRoutes,
 ) *Routes {
 	return &Routes{
 		handler,
 		rateLimitMiddleware,
 		appRoutes,
 		usersRoutes,
+		postsRoutes,
 	}
 }
 
@@ -58,6 +62,7 @@ func (r *Routes) Setup() {
 
 	r.appRoutes.Run(root)
 	r.usersRoutes.Run(apiV1)
+	r.postsRoutes.Run(apiV1)
 
 	// Not Found route
 	r.handler.NoRoute(func(c *gin.Context) {
