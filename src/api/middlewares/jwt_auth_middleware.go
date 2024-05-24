@@ -17,13 +17,13 @@ import (
 type JWTAuthMiddleware struct {
 	logger        *lib.Logger
 	jwtAuthHelper *infrastructure.JWTAuthHelper
-	db            *infrastructure.Database
+	db            infrastructure.Database
 }
 
 func NewJWTAuthMiddleware(
 	logger *lib.Logger,
 	jwtHelper *infrastructure.JWTAuthHelper,
-	db *infrastructure.Database,
+	db infrastructure.Database,
 ) *JWTAuthMiddleware {
 	return &JWTAuthMiddleware{
 		logger,

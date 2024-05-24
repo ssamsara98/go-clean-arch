@@ -11,13 +11,13 @@ import (
 
 type PostsService struct {
 	logger          *lib.Logger
-	db              *infrastructure.Database
+	db              infrastructure.Database
 	paginationScope *gorm.DB
 }
 
 func NewPostsService(
 	logger *lib.Logger,
-	db *infrastructure.Database,
+	db infrastructure.Database,
 ) *PostsService {
 	return &PostsService{
 		logger: logger,

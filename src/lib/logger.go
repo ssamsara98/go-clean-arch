@@ -2,6 +2,7 @@ package lib
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"go.uber.org/fx/fxevent"
@@ -36,16 +37,6 @@ type GinLogger struct {
 	*Logger
 }
 
-// GetLogger get the logger
-func GetLogger() *Logger {
-	env := NewEnv()
-	if globalLogger == nil {
-		logger := newLogger(env)
-		globalLogger = &logger
-	}
-	return globalLogger
-}
-
 func newSugaredLogger(logger *zap.Logger) *Logger {
 	return &Logger{
 		SugaredLogger: logger.Sugar(),
@@ -58,7 +49,7 @@ func newLogger(env *Env) Logger {
 	config := zap.NewDevelopmentConfig()
 	logOutput := env.LogOutput
 
-	if env.Environment == "local" || env.Environment == "development" {
+	if (env.Environment == "local") || (env.Environment == "development") {
 		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	} else if env.Environment == "production" && logOutput != "" {
 		config.OutputPaths = []string{logOutput}
@@ -88,8 +79,18 @@ func newLogger(env *Env) Logger {
 	return *logger
 }
 
+// GetLogger gets the global instance of the logger
+func GetLogger() *Logger {
+	env := NewEnv()
+	if globalLogger == nil {
+		logger := newLogger(env)
+		globalLogger = &logger
+	}
+	return globalLogger
+}
+
 // GetGormLogger build gorm logger from zap logger (sub-logger)
-func (l *Logger) GetGormLogger() *GormLogger {
+func (l *Logger) GetGormLogger() gormlogger.Interface {
 	logger := zapLogger.WithOptions(
 		zap.AddCaller(),
 		zap.AddCallerSkip(3),
@@ -182,7 +183,7 @@ func (l *FxLogger) LogEvent(event fxevent.Event) {
 }
 
 // GetGinLogger gets logger for gin framework debugging
-func (l *Logger) GetGinLogger() *GinLogger {
+func (l *Logger) GetGinLogger() io.Writer {
 	logger := zapLogger.WithOptions(
 		zap.WithCaller(false),
 	)
@@ -192,7 +193,7 @@ func (l *Logger) GetGinLogger() *GinLogger {
 	return result
 }
 
-// ------ GORM logger interface implementation -----
+// --- GORM logger interface implementation ---
 
 // LogMode set log mode
 func (l *GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
@@ -213,7 +214,6 @@ func (l GormLogger) Warn(_ context.Context, str string, args ...any) {
 	if l.LogLevel >= gormlogger.Warn {
 		l.Warnf(str, args...)
 	}
-
 }
 
 // Error prints error messages

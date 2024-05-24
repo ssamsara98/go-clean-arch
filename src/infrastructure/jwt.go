@@ -15,7 +15,7 @@ import (
 type JWTAuthHelper struct {
 	env    *lib.Env
 	logger *lib.Logger
-	// db     *Database
+	// db     Database
 }
 
 type Claims struct {
@@ -29,7 +29,7 @@ type Claims struct {
 func NewJWTAuthHelper(
 	env *lib.Env,
 	logger *lib.Logger,
-	// db *Database,
+	// db Database,
 ) *JWTAuthHelper {
 	return &JWTAuthHelper{
 		env,

@@ -11,13 +11,13 @@ import (
 
 type UsersService struct {
 	logger          *lib.Logger
-	db              *infrastructure.Database
+	db              infrastructure.Database
 	paginationScope *gorm.DB
 }
 
 func NewUsersService(
 	logger *lib.Logger,
-	db *infrastructure.Database,
+	db infrastructure.Database,
 ) *UsersService {
 	return &UsersService{
 		logger: logger,

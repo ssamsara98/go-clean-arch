@@ -26,7 +26,7 @@ type IRoute interface {
 
 // Routes contains multiple routes
 type Routes struct {
-	handler             *infrastructure.Router
+	handler             infrastructure.Router
 	rateLimitMiddleware *middlewares.RateLimitMiddleware
 	appRoutes           *AppRoutes
 	usersRoutes         *UsersRoutes
@@ -35,7 +35,7 @@ type Routes struct {
 
 // NewRoutes sets up routes
 func NewRoutes(
-	handler *infrastructure.Router,
+	handler infrastructure.Router,
 	rateLimitMiddleware *middlewares.RateLimitMiddleware,
 	appRoutes *AppRoutes,
 	usersRoutes *UsersRoutes,

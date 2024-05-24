@@ -15,14 +15,14 @@ import (
 type AppService struct {
 	env           *lib.Env
 	logger        *lib.Logger
-	db            *infrastructure.Database
+	db            infrastructure.Database
 	jwtAuthHelper *infrastructure.JWTAuthHelper
 }
 
 func NewAppService(
 	env *lib.Env,
 	logger *lib.Logger,
-	db *infrastructure.Database,
+	db infrastructure.Database,
 	jwtAuthHelper *infrastructure.JWTAuthHelper,
 ) *AppService {
 	return &AppService{

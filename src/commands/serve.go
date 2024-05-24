@@ -28,10 +28,10 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 	return func(
 		env *lib.Env,
 		logger *lib.Logger,
-		database *infrastructure.Database,
+		database infrastructure.Database,
+		router infrastructure.Router,
 		middleware *middlewares.Middlewares,
 		routes *routes.Routes,
-		router *infrastructure.Router,
 		lc fx.Lifecycle,
 	) {
 		if env.Environment == "production" {

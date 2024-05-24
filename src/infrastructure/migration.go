@@ -10,14 +10,14 @@ import (
 type Migrations struct {
 	env    *lib.Env
 	logger *lib.Logger
-	db     *Database
+	db     Database
 }
 
 // NewMigrations -> return new Migrations struct
 func NewMigrations(
 	env *lib.Env,
 	logger *lib.Logger,
-	db *Database,
+	db Database,
 ) *Migrations {
 	return &Migrations{
 		env:    env,
@@ -55,7 +55,7 @@ func (m *Migrations) Migrate() error {
 func RunMigration(
 	env *lib.Env,
 	logger *lib.Logger,
-	db *Database,
+	db Database,
 ) error {
 	m := &Migrations{
 		env:    env,
