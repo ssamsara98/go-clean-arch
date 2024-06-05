@@ -14,17 +14,17 @@ type Migrations struct {
 }
 
 // NewMigrations -> return new Migrations struct
-func NewMigrations(
-	env *lib.Env,
-	logger *lib.Logger,
-	db Database,
-) *Migrations {
-	return &Migrations{
-		env:    env,
-		logger: logger,
-		db:     db,
-	}
-}
+// func NewMigrations(
+// 	env *lib.Env,
+// 	logger *lib.Logger,
+// 	db Database,
+// ) *Migrations {
+// 	return &Migrations{
+// 		env:    env,
+// 		logger: logger,
+// 		db:     db,
+// 	}
+// }
 
 // Migrate migrates all migrations that are defined
 func (m *Migrations) Migrate() error {

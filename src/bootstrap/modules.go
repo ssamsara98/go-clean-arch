@@ -5,6 +5,7 @@ import (
 	"go-clean-arch/src/api/middlewares"
 	"go-clean-arch/src/api/routes"
 	"go-clean-arch/src/api/services"
+	"go-clean-arch/src/helpers"
 	"go-clean-arch/src/infrastructure"
 	"go-clean-arch/src/lib"
 
@@ -14,6 +15,7 @@ import (
 var CommonModules = fx.Options(
 	lib.Module,
 	infrastructure.Module,
+	helpers.Module,
 	services.Module,
 	controllers.Module,
 	middlewares.Module,

@@ -1,4 +1,4 @@
-package infrastructure
+package helpers
 
 import (
 	"errors"
@@ -11,11 +11,10 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// JWTAuthHelper service relating to authorization
-type JWTAuthHelper struct {
+// JWTAuth service relating to authorization
+type JWTAuth struct {
 	env    *lib.Env
 	logger *lib.Logger
-	// db     Database
 }
 
 type Claims struct {
@@ -26,20 +25,19 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewJWTAuthHelper(
+func NewJWTAuth(
 	env *lib.Env,
 	logger *lib.Logger,
-	// db Database,
-) *JWTAuthHelper {
-	return &JWTAuthHelper{
+
+) *JWTAuth {
+	return &JWTAuth{
 		env,
 		logger,
-		// db,
 	}
 }
 
 // CreateToken creates jwt auth token
-func (j *JWTAuthHelper) CreateToken(user *models.User, tokenType string) (string, error) {
+func (j *JWTAuth) CreateToken(user *models.User, tokenType string) (string, error) {
 	var secret string
 	var duration time.Duration
 	if tokenType == constants.TokenAccess {
@@ -76,7 +74,7 @@ func (j *JWTAuthHelper) CreateToken(user *models.User, tokenType string) (string
 }
 
 // Authorize authorizes the generated token
-func (j *JWTAuthHelper) VerifyToken(tokenString string, tokenType string) (*Claims, error) {
+func (j *JWTAuth) VerifyToken(tokenString string, tokenType string) (*Claims, error) {
 	var secret string
 	if tokenType == constants.TokenAccess {
 		secret = j.env.JWTAccessSecret

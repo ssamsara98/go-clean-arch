@@ -155,6 +155,7 @@ api
   middleware
   controller
   service
+helpers
 infrastructure
 model
 lib

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"go-clean-arch/src/api/dto"
 	"go-clean-arch/src/constants"
+	"go-clean-arch/src/helpers"
 	"go-clean-arch/src/infrastructure"
 	"go-clean-arch/src/lib"
 	"go-clean-arch/src/models"
@@ -13,23 +14,23 @@ import (
 )
 
 type AppService struct {
-	env           *lib.Env
-	logger        *lib.Logger
-	db            infrastructure.Database
-	jwtAuthHelper *infrastructure.JWTAuthHelper
+	env     *lib.Env
+	logger  *lib.Logger
+	db      infrastructure.Database
+	JWTAuth *helpers.JWTAuth
 }
 
 func NewAppService(
 	env *lib.Env,
 	logger *lib.Logger,
 	db infrastructure.Database,
-	jwtAuthHelper *infrastructure.JWTAuthHelper,
+	JWTAuth *helpers.JWTAuth,
 ) *AppService {
 	return &AppService{
 		env,
 		logger,
 		db,
-		jwtAuthHelper,
+		JWTAuth,
 	}
 }
 
@@ -85,11 +86,11 @@ type Tokens struct {
 }
 
 func (app *AppService) createToken(user *models.User) (*Tokens, error) {
-	accessToken, err := app.jwtAuthHelper.CreateToken(user, constants.TokenAccess)
+	accessToken, err := app.JWTAuth.CreateToken(user, constants.TokenAccess)
 	if err != nil {
 		return nil, err
 	}
-	refreshToken, err := app.jwtAuthHelper.CreateToken(user, constants.TokenRefresh)
+	refreshToken, err := app.JWTAuth.CreateToken(user, constants.TokenRefresh)
 	if err != nil {
 		return nil, err
 	}

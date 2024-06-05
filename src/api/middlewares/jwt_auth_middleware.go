@@ -3,6 +3,7 @@ package middlewares
 import (
 	"errors"
 	"go-clean-arch/src/constants"
+	"go-clean-arch/src/helpers"
 	"go-clean-arch/src/infrastructure"
 	"go-clean-arch/src/lib"
 	"go-clean-arch/src/models"
@@ -15,14 +16,14 @@ import (
 )
 
 type JWTAuthMiddleware struct {
-	logger        *lib.Logger
-	jwtAuthHelper *infrastructure.JWTAuthHelper
-	db            infrastructure.Database
+	logger  *lib.Logger
+	JWTAuth *helpers.JWTAuth
+	db      infrastructure.Database
 }
 
 func NewJWTAuthMiddleware(
 	logger *lib.Logger,
-	jwtHelper *infrastructure.JWTAuthHelper,
+	jwtHelper *helpers.JWTAuth,
 	db infrastructure.Database,
 ) *JWTAuthMiddleware {
 	return &JWTAuthMiddleware{
@@ -48,7 +49,7 @@ func (m *JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerF
 		}
 
 		tokenString := strings.Replace(authorizationHeader, constants.TokenPrefix+" ", "", -1)
-		claims, err := m.jwtAuthHelper.VerifyToken(tokenString, tokenType)
+		claims, err := m.JWTAuth.VerifyToken(tokenString, tokenType)
 		if err != nil {
 			m.logger.Error("claims error")
 			utils.ErrorJSON(c, http.StatusUnauthorized, err)

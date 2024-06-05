@@ -4,7 +4,7 @@ import (
 	"go-clean-arch/src/api/dto"
 	"go-clean-arch/src/api/services"
 	"go-clean-arch/src/constants"
-	"go-clean-arch/src/infrastructure"
+	"go-clean-arch/src/helpers"
 	"go-clean-arch/src/lib"
 	"go-clean-arch/src/models"
 	"go-clean-arch/src/utils"
@@ -100,7 +100,7 @@ func (app *AppController) UpdateProfile(c *gin.Context) {
 }
 
 func (app *AppController) TokenCheck(c *gin.Context) {
-	claims, _ := c.MustGet(constants.User).(*infrastructure.Claims)
+	claims, _ := c.MustGet(constants.User).(*helpers.Claims)
 	utils.SuccessJSON(c, http.StatusOK, claims)
 }
 

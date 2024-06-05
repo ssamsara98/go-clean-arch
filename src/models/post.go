@@ -7,7 +7,8 @@ import (
 // User model
 type Post struct {
 	lib.ModelBase
-	AuthorId    uint   `json:"authorId"`
+	AuthorID    uint   `json:"authorId"`
+	Author      *User  `json:"author" gorm:"foreignKey:AuthorID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	Title       string `json:"title"`
 	Content     string `json:"content"`
 	IsPublished bool   `json:"isPublished"`

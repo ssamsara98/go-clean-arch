@@ -91,7 +91,7 @@ func (p *PostsController) UpdatePost(c *gin.Context) {
 		utils.ErrorJSON(c, http.StatusNotFound, err)
 		return
 	}
-	if post.AuthorId != user.ID {
+	if post.AuthorID != user.ID {
 		utils.ErrorJSON(c, http.StatusForbidden, errors.New("author_id != user.id"))
 		return
 	}
@@ -121,7 +121,7 @@ func (p *PostsController) PublishPost(c *gin.Context) {
 		utils.ErrorJSON(c, http.StatusNotFound, err)
 		return
 	}
-	if post.AuthorId != user.ID {
+	if post.AuthorID != user.ID {
 		utils.ErrorJSON(c, http.StatusForbidden, errors.New("author_id != user.id"))
 		return
 	}
@@ -145,7 +145,7 @@ func (p *PostsController) DeletePost(c *gin.Context) {
 		utils.ErrorJSON(c, http.StatusNotFound, err)
 		return
 	}
-	if post.AuthorId != user.ID {
+	if post.AuthorID != user.ID {
 		utils.ErrorJSON(c, http.StatusForbidden, errors.New("author_id != user.id"))
 		return
 	}

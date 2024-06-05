@@ -30,5 +30,5 @@ func (u *UsersRoutes) Run(handler *gin.RouterGroup) {
 	router := handler.Group("users")
 
 	router.GET("/", u.paginationMiddleware.Handle(), u.usersController.GetUserList)
-	router.GET("/:userId", u.usersController.GetUserByID)
+	router.GET("/u/:userId", u.usersController.GetUserByID)
 }

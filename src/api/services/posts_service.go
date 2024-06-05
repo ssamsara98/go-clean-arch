@@ -44,12 +44,12 @@ func (p *PostsService) GetPostList() (*[]models.Post, *int64, error) {
 }
 
 func (p *PostsService) GetPostById(uri *dto.GetPostByIDParams) (post models.Post, err error) {
-	return post, p.db.First(&post, "id = ?", uri.ID).Error
+	return post, p.db.Preload("Author").First(&post, "id = ?", uri.ID).Error
 }
 
 func (p *PostsService) CreatePost(user *models.User, body *dto.CreatePostDto) (*models.Post, error) {
 	post := models.Post{
-		AuthorId:    user.ID,
+		AuthorID:    user.ID,
 		Title:       body.Title,
 		Content:     body.Content,
 		IsPublished: body.IsPublished,

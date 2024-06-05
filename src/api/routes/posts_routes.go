@@ -34,11 +34,11 @@ func (p *PostsRoutes) Run(handler *gin.RouterGroup) {
 	router := handler.Group("posts")
 
 	router.GET("/", p.paginationMiddleware.Handle(), p.postsController.GetPostList)
-	router.GET("/:postId", p.postsController.GetPostById)
+	router.GET("/p/:postId", p.postsController.GetPostById)
 
 	router.Use(p.jwtAuthMiddleware.Handle(constants.TokenAccess, true))
 	router.POST("/", p.postsController.CreatePost)
-	router.PATCH("/:postId", p.postsController.UpdatePost)
-	router.PATCH("/:postId/publish", p.postsController.PublishPost)
-	router.DELETE("/:postId", p.postsController.DeletePost)
+	router.PATCH("/p/:postId", p.postsController.UpdatePost)
+	router.PATCH("/p/:postId/publish", p.postsController.PublishPost)
+	router.DELETE("/p/:postId", p.postsController.DeletePost)
 }
