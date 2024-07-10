@@ -18,18 +18,18 @@ import (
 type ServeCommand struct {
 }
 
-func (s *ServeCommand) Short() string {
+func (s ServeCommand) Short() string {
 	return "Serve Application"
 }
 
-func (s *ServeCommand) Setup(_ *cobra.Command) {}
+func (s ServeCommand) Setup(_ *cobra.Command) {}
 
-func (s *ServeCommand) Run() lib.CommandRunner {
+func (s ServeCommand) Run() lib.CommandRunner {
 	return func(
 		env *lib.Env,
 		logger *lib.Logger,
-		database infrastructure.Database,
-		router infrastructure.Router,
+		database *infrastructure.Database,
+		router *infrastructure.Router,
 		middleware *middlewares.Middlewares,
 		routes *routes.Routes,
 		lc fx.Lifecycle,
@@ -74,21 +74,21 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 		// }
 
 		// --- using lifecycle
-		var srv *http.Server
+		var server *http.Server
 		if env.ServerPort != "" {
-			srv = &http.Server{Addr: ":" + env.ServerPort, Handler: router}
+			server = &http.Server{Addr: ":" + env.ServerPort, Handler: router}
 		} else {
-			srv = &http.Server{Handler: router}
+			server = &http.Server{Handler: router}
 		}
 		lc.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
-				ln, err := net.Listen("tcp", srv.Addr)
+				ln, err := net.Listen("tcp", server.Addr)
 				if err != nil {
 					return err
 				}
-				logger.Info("Starting HTTP server at", srv.Addr)
+				logger.Info("Starting HTTP server at", server.Addr)
 				go func() {
-					err := srv.Serve(ln)
+					err := server.Serve(ln)
 					if err != nil {
 						logger.Error(err)
 					}
@@ -96,7 +96,7 @@ func (s *ServeCommand) Run() lib.CommandRunner {
 				return nil
 			},
 			OnStop: func(ctx context.Context) error {
-				return srv.Shutdown(ctx)
+				return server.Shutdown(ctx)
 			},
 		})
 	}

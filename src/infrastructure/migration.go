@@ -10,7 +10,7 @@ import (
 type Migrations struct {
 	env    *lib.Env
 	logger *lib.Logger
-	db     Database
+	db     *Database
 }
 
 // NewMigrations -> return new Migrations struct
@@ -27,7 +27,7 @@ type Migrations struct {
 // }
 
 // Migrate migrates all migrations that are defined
-func (m *Migrations) Migrate() error {
+func (m Migrations) Migrate() error {
 	if m.env.Environment == "production" {
 		m.logger.Info("no start-up migration on production.")
 		return nil
@@ -55,7 +55,7 @@ func (m *Migrations) Migrate() error {
 func RunMigration(
 	env *lib.Env,
 	logger *lib.Logger,
-	db Database,
+	db *Database,
 ) error {
 	m := &Migrations{
 		env:    env,

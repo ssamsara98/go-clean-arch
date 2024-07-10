@@ -29,12 +29,12 @@ func NewAppController(
 	}
 }
 
-func (app *AppController) Home(c *gin.Context) {
+func (app AppController) Home(c *gin.Context) {
 	message := app.appService.Home()
 	utils.SuccessJSON(c, http.StatusOK, message)
 }
 
-func (app *AppController) Register(c *gin.Context) {
+func (app AppController) Register(c *gin.Context) {
 	var body dto.RegisterUserDto
 	err := c.Bind(&body)
 	if err != nil {
@@ -59,7 +59,7 @@ func (app *AppController) Register(c *gin.Context) {
 	utils.SuccessJSON(c, http.StatusCreated, result)
 }
 
-func (app *AppController) Login(c *gin.Context) {
+func (app AppController) Login(c *gin.Context) {
 	var body dto.LoginUserDto
 	err := c.Bind(&body)
 	if err != nil {
@@ -76,12 +76,12 @@ func (app *AppController) Login(c *gin.Context) {
 	utils.SuccessJSON(c, http.StatusCreated, token)
 }
 
-func (app *AppController) Me(c *gin.Context) {
+func (app AppController) Me(c *gin.Context) {
 	user, _ := c.MustGet(constants.User).(*models.User)
 	utils.SuccessJSON(c, http.StatusOK, user)
 }
 
-func (app *AppController) UpdateProfile(c *gin.Context) {
+func (app AppController) UpdateProfile(c *gin.Context) {
 	var body dto.UpdateProfileDto
 	err := c.Bind(&body)
 	if err != nil {
@@ -99,12 +99,12 @@ func (app *AppController) UpdateProfile(c *gin.Context) {
 	utils.SuccessJSON(c, http.StatusOK, "success")
 }
 
-func (app *AppController) TokenCheck(c *gin.Context) {
+func (app AppController) TokenCheck(c *gin.Context) {
 	claims, _ := c.MustGet(constants.User).(*helpers.Claims)
 	utils.SuccessJSON(c, http.StatusOK, claims)
 }
 
-func (app *AppController) TokenRefresh(c *gin.Context) {
+func (app AppController) TokenRefresh(c *gin.Context) {
 	user, _ := c.MustGet(constants.User).(*models.User)
 	tokens, err := app.appService.TokenRefresh(user)
 	if err != nil {

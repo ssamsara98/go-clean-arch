@@ -30,7 +30,7 @@ func NewPostsRoutes(
 	}
 }
 
-func (p *PostsRoutes) Run(handler *gin.RouterGroup) {
+func (p PostsRoutes) Run(handler *gin.RouterGroup) {
 	router := handler.Group("posts")
 
 	router.GET("/", p.paginationMiddleware.Handle(), p.postsController.GetPostList)

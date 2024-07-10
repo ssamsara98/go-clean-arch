@@ -5,12 +5,12 @@ import (
 )
 
 // ErrorJSON : json error response function
-func ErrorJSON(c *gin.Context, statusCode int, data error) {
+func ErrorJSON(c *gin.Context, statusCode int, err error) {
 	resp := gin.H{
 		"status":     "error",
 		"statusCode": statusCode,
-		"message":    data.Error(),
-		"error":      data,
+		"message":    err.Error(),
+		"error":      err,
 	}
 	c.JSON(statusCode, resp)
 }

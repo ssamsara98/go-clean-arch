@@ -16,14 +16,14 @@ import (
 type AppService struct {
 	env     *lib.Env
 	logger  *lib.Logger
-	db      infrastructure.Database
+	db      *infrastructure.Database
 	JWTAuth *helpers.JWTAuth
 }
 
 func NewAppService(
 	env *lib.Env,
 	logger *lib.Logger,
-	db infrastructure.Database,
+	db *infrastructure.Database,
 	JWTAuth *helpers.JWTAuth,
 ) *AppService {
 	return &AppService{
@@ -35,16 +35,16 @@ func NewAppService(
 }
 
 // WithTrx delegates transaction to repository database
-func (app *AppService) WithTrx(trxHandle *gorm.DB) *AppService {
+func (app AppService) WithTrx(trxHandle *gorm.DB) *AppService {
 	app.db = app.db.WithTrx(trxHandle)
-	return app
+	return &app
 }
 
-func (app *AppService) Home() string {
+func (app AppService) Home() string {
 	return "Hello, World!"
 }
 
-func (app *AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
+func (app AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
 	var user models.User
 
 	result := app.db.Where("email = ?", body.Email).Or("username = ?", body.Username).First(&user)
@@ -61,7 +61,7 @@ func (app *AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
 	return result.Error
 }
 
-func (app *AppService) Register(body *dto.RegisterUserDto) (*models.User, error) {
+func (app AppService) Register(body *dto.RegisterUserDto) (*models.User, error) {
 	hashedPassword := utils.HashPassword([]byte(body.Password))
 
 	user := models.User{
@@ -85,7 +85,7 @@ type Tokens struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-func (app *AppService) createToken(user *models.User) (*Tokens, error) {
+func (app AppService) createToken(user *models.User) (*Tokens, error) {
 	accessToken, err := app.JWTAuth.CreateToken(user, constants.TokenAccess)
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (app *AppService) createToken(user *models.User) (*Tokens, error) {
 	return tokens, nil
 }
 
-func (app *AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
+func (app AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
 	user := new(models.User)
 	res := app.db.Where("email = ? OR username = ?", body.UserSession, body.UserSession).First(user)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -119,7 +119,7 @@ func (app *AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
 	return app.createToken(user)
 }
 
-func (app *AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error {
+func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error {
 	user := &models.User{
 		ModelBase: lib.ModelBase{ID: id},
 		Name:      body.Name,
@@ -134,6 +134,6 @@ func (app *AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error 
 	return nil
 }
 
-func (app *AppService) TokenRefresh(user *models.User) (*Tokens, error) {
+func (app AppService) TokenRefresh(user *models.User) (*Tokens, error) {
 	return app.createToken(user)
 }

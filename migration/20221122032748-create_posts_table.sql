@@ -5,13 +5,13 @@ CREATE TABLE IF NOT EXISTS "posts" (
   "updated_at" timestamp NOT NULL DEFAULT now(),
   "deleted_at" timestamp,
   "id" bigserial NOT NULL,
-  "author_id" bigserial NOT NULL,
+  "author_id" bigserial,
   "title" character varying NOT NULL,
   "content" text NOT NULL,
   "is_published" boolean NOT NULL DEFAULT false,
 
   PRIMARY KEY ("id"),
-  FOREIGN KEY ("author_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY ("author_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- +migrate Down

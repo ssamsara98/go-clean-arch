@@ -19,7 +19,7 @@ type Database struct {
 func NewDatabase(
 	env *lib.Env,
 	log *lib.Logger,
-) Database {
+) *Database {
 	url := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%s dbname=%s",
 		env.DBUsername,
@@ -77,7 +77,7 @@ func NewDatabase(
 	// }
 	log.Info("database connection established")
 
-	database := Database{
+	database := &Database{
 		db,
 		log,
 	}
@@ -92,10 +92,10 @@ func NewDatabase(
 }
 
 // WithTrx delegate transaction from user repository
-func (d *Database) WithTrx(trxHandle *gorm.DB) Database {
+func (d Database) WithTrx(trxHandle *gorm.DB) *Database {
 	if trxHandle != nil {
 		d.logger.Debug("using WithTrx as trxHandle is not nil")
 		d.DB = trxHandle
 	}
-	return *d
+	return &d
 }

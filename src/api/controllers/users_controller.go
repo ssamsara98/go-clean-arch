@@ -25,7 +25,7 @@ func NewUsersController(
 	}
 }
 
-func (u *UsersController) GetUserList(c *gin.Context) {
+func (u UsersController) GetUserList(c *gin.Context) {
 	limit, page := utils.GetPaginationQuery(c)
 	items, count, err := u.usersService.SetPaginationScope(utils.Paginate(limit, page)).GetUserList()
 	if err != nil {
@@ -37,7 +37,7 @@ func (u *UsersController) GetUserList(c *gin.Context) {
 	utils.SuccessJSON(c, http.StatusOK, resp)
 }
 
-func (u *UsersController) GetUserByID(c *gin.Context) {
+func (u UsersController) GetUserByID(c *gin.Context) {
 	uri, err := utils.BindUri[dto.GetUserByIDParams](c)
 	if err != nil {
 		utils.ErrorJSON(c, http.StatusBadRequest, err)

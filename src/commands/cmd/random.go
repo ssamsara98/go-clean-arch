@@ -12,15 +12,15 @@ type RandomCommand struct {
 	num int
 }
 
-func (r *RandomCommand) Short() string {
+func (r RandomCommand) Short() string {
 	return "generate a random command"
 }
 
-func (r *RandomCommand) Setup(cmd *cobra.Command) {
+func (r RandomCommand) Setup(cmd *cobra.Command) {
 	cmd.Flags().IntVarP(&r.num, "num", "n", 5, "length of random number to generate")
 }
 
-func (r *RandomCommand) Run() lib.CommandRunner {
+func (r RandomCommand) Run() lib.CommandRunner {
 	return func(l *lib.Logger) {
 		l.Info("running random command")
 		rand.New(rand.NewSource(time.Now().Unix()))

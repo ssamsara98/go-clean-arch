@@ -12,6 +12,6 @@ type User struct {
 	Username  string     `json:"username" gorm:"unique"`
 	Password  string     `json:"-"`
 	Name      string     `json:"name"`
-	SexType   string     `json:"sexType" gorm:"default:'Unknown'"`
+	SexType   *string    `json:"sexType" gorm:"default:'Unknown'"`
 	Birthdate *time.Time `json:"birthdate"`
 }

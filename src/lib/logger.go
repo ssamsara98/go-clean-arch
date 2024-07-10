@@ -81,7 +81,7 @@ func newLogger(env *Env) Logger {
 
 // GetLogger gets the global instance of the logger
 func GetLogger() *Logger {
-	env := NewEnv()
+	env := GetEnv()
 	if globalLogger == nil {
 		logger := newLogger(env)
 		globalLogger = &logger
@@ -90,7 +90,7 @@ func GetLogger() *Logger {
 }
 
 // GetGormLogger build gorm logger from zap logger (sub-logger)
-func (l *Logger) GetGormLogger() gormlogger.Interface {
+func (l Logger) GetGormLogger() gormlogger.Interface {
 	logger := zapLogger.WithOptions(
 		zap.AddCaller(),
 		zap.AddCallerSkip(3),
@@ -108,7 +108,7 @@ func (l *Logger) GetGormLogger() gormlogger.Interface {
 }
 
 // GetFxLogger gets logger for go-fx
-func (l *Logger) GetFxLogger() fxevent.Logger {
+func (l Logger) GetFxLogger() fxevent.Logger {
 	logger := zapLogger.WithOptions(
 		zap.WithCaller(false),
 	)
@@ -116,7 +116,7 @@ func (l *Logger) GetFxLogger() fxevent.Logger {
 	return result
 }
 
-func (l *FxLogger) LogEvent(event fxevent.Event) {
+func (l FxLogger) LogEvent(event fxevent.Event) {
 	switch e := event.(type) {
 	case *fxevent.OnStartExecuting:
 		l.Logger.Debug("OnStart hook executing: ",
@@ -183,7 +183,7 @@ func (l *FxLogger) LogEvent(event fxevent.Event) {
 }
 
 // GetGinLogger gets logger for gin framework debugging
-func (l *Logger) GetGinLogger() io.Writer {
+func (l Logger) GetGinLogger() io.Writer {
 	logger := zapLogger.WithOptions(
 		zap.WithCaller(false),
 	)
@@ -196,10 +196,9 @@ func (l *Logger) GetGinLogger() io.Writer {
 // --- GORM logger interface implementation ---
 
 // LogMode set log mode
-func (l *GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
-	newlogger := *l
-	newlogger.LogLevel = level
-	return &newlogger
+func (l GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
+	l.LogLevel = level
+	return &l
 }
 
 // Info prints info

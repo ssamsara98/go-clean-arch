@@ -18,13 +18,13 @@ import (
 type JWTAuthMiddleware struct {
 	logger  *lib.Logger
 	JWTAuth *helpers.JWTAuth
-	db      infrastructure.Database
+	db      *infrastructure.Database
 }
 
 func NewJWTAuthMiddleware(
 	logger *lib.Logger,
 	jwtHelper *helpers.JWTAuth,
-	db infrastructure.Database,
+	db *infrastructure.Database,
 ) *JWTAuthMiddleware {
 	return &JWTAuthMiddleware{
 		logger,
@@ -33,7 +33,7 @@ func NewJWTAuthMiddleware(
 	}
 }
 
-func (m *JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerFunc {
+func (m JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerFunc {
 	m.logger.Debug("setting up jwt auth middleware")
 
 	return func(c *gin.Context) {

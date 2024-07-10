@@ -37,7 +37,7 @@ func NewJWTAuth(
 }
 
 // CreateToken creates jwt auth token
-func (j *JWTAuth) CreateToken(user *models.User, tokenType string) (string, error) {
+func (j JWTAuth) CreateToken(user *models.User, tokenType string) (string, error) {
 	var secret string
 	var duration time.Duration
 	if tokenType == constants.TokenAccess {
@@ -74,7 +74,7 @@ func (j *JWTAuth) CreateToken(user *models.User, tokenType string) (string, erro
 }
 
 // Authorize authorizes the generated token
-func (j *JWTAuth) VerifyToken(tokenString string, tokenType string) (*Claims, error) {
+func (j JWTAuth) VerifyToken(tokenString string, tokenType string) (*Claims, error) {
 	var secret string
 	if tokenType == constants.TokenAccess {
 		secret = j.env.JWTAccessSecret

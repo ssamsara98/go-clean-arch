@@ -26,8 +26,8 @@ func NewMiddlewares() *Middlewares {
 }
 
 // Setup sets up middlewares
-func (m *Middlewares) Setup() {
-	for _, middleware := range *m {
+func (m Middlewares) Setup() {
+	for _, middleware := range m {
 		middleware.Setup()
 	}
 }

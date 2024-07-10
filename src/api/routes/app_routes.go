@@ -26,7 +26,7 @@ func NewAppRoutes(
 	}
 }
 
-func (app *AppRoutes) Run(handler *gin.RouterGroup) {
+func (app AppRoutes) Run(handler *gin.RouterGroup) {
 	handler.GET("/", app.appController.Home)
 	handler.POST("/register", app.dbTransactionMiddleware.Handle(), app.appController.Register)
 	handler.POST("/login", app.appController.Login)

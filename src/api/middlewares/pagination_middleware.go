@@ -16,7 +16,7 @@ func NewPaginationMiddleware(logger *lib.Logger) *PaginationMiddleware {
 	return &PaginationMiddleware{logger: logger}
 }
 
-func (p *PaginationMiddleware) Handle() gin.HandlerFunc {
+func (p PaginationMiddleware) Handle() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		p.logger.Debug("setting up pagination middleware")
 

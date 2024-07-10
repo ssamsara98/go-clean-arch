@@ -13,13 +13,13 @@ import (
 // DBTransactionMiddleware -> struct for transaction
 type DBTransactionMiddleware struct {
 	logger *lib.Logger
-	db     infrastructure.Database
+	db     *infrastructure.Database
 }
 
 // NewDBTransactionMiddleware -> new instance of transaction
 func NewDBTransactionMiddleware(
 	logger *lib.Logger,
-	db infrastructure.Database,
+	db *infrastructure.Database,
 ) *DBTransactionMiddleware {
 	return &DBTransactionMiddleware{
 		logger: logger,
@@ -28,7 +28,7 @@ func NewDBTransactionMiddleware(
 }
 
 // Handle -> It setup the database transaction middleware
-func (m *DBTransactionMiddleware) Handle() gin.HandlerFunc {
+func (m DBTransactionMiddleware) Handle() gin.HandlerFunc {
 	m.logger.Debug("setting up database transaction middleware")
 
 	return func(c *gin.Context) {

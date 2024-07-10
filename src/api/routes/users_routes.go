@@ -26,7 +26,7 @@ func NewUsersRoutes(
 	}
 }
 
-func (u *UsersRoutes) Run(handler *gin.RouterGroup) {
+func (u UsersRoutes) Run(handler *gin.RouterGroup) {
 	router := handler.Group("users")
 
 	router.GET("/", u.paginationMiddleware.Handle(), u.usersController.GetUserList)

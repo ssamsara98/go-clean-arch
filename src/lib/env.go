@@ -31,15 +31,13 @@ type Env struct {
 	AdminPassword string `mapstructure:"ADMIN_PASSWORD"`
 }
 
-var globalEnv = &Env{
-	MaxMultipartMemory: 10 << 20, // 10 MB
-}
+var globalEnv *Env
 
-func GetEnv() *Env {
-	return globalEnv
-}
+func setEnv() {
+	globalEnv = &Env{
+		MaxMultipartMemory: 10 << 20, // 10 MB
+	}
 
-func NewEnv() *Env {
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 	viper.SetConfigFile(".env")
@@ -55,6 +53,11 @@ func NewEnv() *Env {
 	if err != nil {
 		log.Fatal("environment cant be loaded: ", err)
 	}
+}
 
+func GetEnv() *Env {
+	if globalEnv == nil {
+		setEnv()
+	}
 	return globalEnv
 }

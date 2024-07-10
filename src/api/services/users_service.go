@@ -11,13 +11,13 @@ import (
 
 type UsersService struct {
 	logger          *lib.Logger
-	db              infrastructure.Database
+	db              *infrastructure.Database
 	paginationScope *gorm.DB
 }
 
 func NewUsersService(
 	logger *lib.Logger,
-	db infrastructure.Database,
+	db *infrastructure.Database,
 ) *UsersService {
 	return &UsersService{
 		logger: logger,
@@ -26,12 +26,12 @@ func NewUsersService(
 }
 
 // PaginationScope
-func (u *UsersService) SetPaginationScope(scope func(*gorm.DB) *gorm.DB) *UsersService {
+func (u UsersService) SetPaginationScope(scope func(*gorm.DB) *gorm.DB) *UsersService {
 	u.paginationScope = u.db.WithTrx(u.db.Scopes(scope)).DB
-	return u
+	return &u
 }
 
-func (u *UsersService) GetUserList() (*[]models.User, *int64, error) {
+func (u UsersService) GetUserList() (*[]models.User, *int64, error) {
 	var items []models.User
 	var count int64
 
@@ -43,6 +43,6 @@ func (u *UsersService) GetUserList() (*[]models.User, *int64, error) {
 	return &items, &count, nil
 }
 
-func (u *UsersService) GetUserByID(uri *dto.GetUserByIDParams) (user models.User, err error) {
+func (u UsersService) GetUserByID(uri *dto.GetUserByIDParams) (user models.User, err error) {
 	return user, u.db.First(&user, "id = ?", uri.ID).Error
 }
