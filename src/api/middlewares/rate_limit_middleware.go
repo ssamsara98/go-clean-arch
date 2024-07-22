@@ -41,10 +41,10 @@ func NewRateLimitMiddleware(logger *lib.Logger) *RateLimitMiddleware {
 }
 
 func (lm RateLimitMiddleware) Handle(options ...Option) gin.HandlerFunc {
+	lm.logger.Debug("setting up rate limit middleware")
+
 	return func(c *gin.Context) {
 		key := c.ClientIP() // Gets cient IP Address
-
-		lm.logger.Debug("Setting up rate limit middleware")
 
 		// Setting up rate limit
 		// Limit -> # of API Calls

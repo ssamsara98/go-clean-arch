@@ -33,7 +33,7 @@ func (m DBTransactionMiddleware) Handle() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		txHandle := m.db.DB.Begin()
-		m.logger.Info("beginning database transaction")
+		m.logger.Debug("beginning database transaction")
 
 		defer func() {
 			if r := recover(); r != nil {
@@ -45,12 +45,12 @@ func (m DBTransactionMiddleware) Handle() gin.HandlerFunc {
 		c.Next()
 
 		if utils.StatusInList(c.Writer.Status(), []int{http.StatusOK, http.StatusCreated}) {
-			m.logger.Info("committing transactions")
+			m.logger.Debug("committing transactions")
 			if err := txHandle.Commit().Error; err != nil {
 				m.logger.Error("trx commit error: ", err)
 			}
 		} else {
-			m.logger.Info("rolling back transaction due to status code: ", c.Writer.Status())
+			m.logger.Debug("rolling back transaction due to status code: ", c.Writer.Status())
 			txHandle.Rollback()
 		}
 	}

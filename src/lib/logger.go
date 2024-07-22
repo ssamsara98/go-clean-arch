@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"context"
 	"io"
 	"time"
 
@@ -19,22 +18,6 @@ var (
 // Logger structure
 type Logger struct {
 	*zap.SugaredLogger
-}
-
-// GormLogger logger for gorm logging [subbed from main logger]
-type GormLogger struct {
-	*Logger
-	gormlogger.Config
-}
-
-// FxLogger logger for go-fx [subbed from main logger]
-type FxLogger struct {
-	*Logger
-}
-
-// GinLogger logger for gin framework [subbed from main logger]
-type GinLogger struct {
-	*Logger
 }
 
 func newSugaredLogger(logger *zap.Logger) *Logger {
@@ -96,14 +79,25 @@ func (l Logger) GetGormLogger() gormlogger.Interface {
 		zap.AddCallerSkip(3),
 	)
 
+	ignoreRecordNotFoundError := false
+	colorful := true
+	if globalEnv != nil {
+		if globalEnv.Environment == "production" {
+			ignoreRecordNotFoundError = true
+			colorful = false
+		}
+	}
+
 	result := &GormLogger{
 		Logger: newSugaredLogger(logger),
 		Config: gormlogger.Config{
-			LogLevel:                  gormlogger.Info,
-			IgnoreRecordNotFoundError: false,
-			Colorful:                  true,
+			SlowThreshold:             250 * time.Millisecond,
+			LogLevel:                  gormlogger.Warn,
+			IgnoreRecordNotFoundError: ignoreRecordNotFoundError,
+			Colorful:                  colorful,
 		},
 	}
+	result.setup()
 	return result
 }
 
@@ -116,72 +110,6 @@ func (l Logger) GetFxLogger() fxevent.Logger {
 	return result
 }
 
-func (l FxLogger) LogEvent(event fxevent.Event) {
-	switch e := event.(type) {
-	case *fxevent.OnStartExecuting:
-		l.Logger.Debug("OnStart hook executing: ",
-			zap.String("callee", e.FunctionName),
-			zap.String("caller", e.CallerName),
-		)
-	case *fxevent.OnStartExecuted:
-		if e.Err != nil {
-			l.Logger.Debug("OnStart hook failed: ",
-				zap.String("callee", e.FunctionName),
-				zap.String("caller", e.CallerName),
-				zap.Error(e.Err),
-			)
-		} else {
-			l.Logger.Debug("OnStart hook executed: ",
-				zap.String("callee", e.FunctionName),
-				zap.String("caller", e.CallerName),
-				zap.String("runtime", e.Runtime.String()),
-			)
-		}
-	case *fxevent.OnStopExecuting:
-		l.Logger.Debug("OnStop hook executing: ",
-			zap.String("callee", e.FunctionName),
-			zap.String("caller", e.CallerName),
-		)
-	case *fxevent.OnStopExecuted:
-		if e.Err != nil {
-			l.Logger.Debug("OnStop hook failed: ",
-				zap.String("callee", e.FunctionName),
-				zap.String("caller", e.CallerName),
-				zap.Error(e.Err),
-			)
-		} else {
-			l.Logger.Debug("OnStop hook executed: ",
-				zap.String("callee", e.FunctionName),
-				zap.String("caller", e.CallerName),
-				zap.String("runtime", e.Runtime.String()),
-			)
-		}
-	case *fxevent.Supplied:
-		l.Logger.Debug("supplied: ", zap.String("type", e.TypeName), zap.Error(e.Err))
-	case *fxevent.Provided:
-		for _, rtype := range e.OutputTypeNames {
-			l.Logger.Debug("provided: ", e.ConstructorName, " => ", rtype)
-		}
-	case *fxevent.Decorated:
-		for _, rtype := range e.OutputTypeNames {
-			l.Logger.Debug("decorated: ",
-				zap.String("decorator", e.DecoratorName),
-				zap.String("type", rtype),
-			)
-		}
-	case *fxevent.Invoking:
-		l.Logger.Debug("invoking: ", e.FunctionName)
-	case *fxevent.Started:
-		if e.Err == nil {
-			l.Logger.Debug("started")
-		}
-	case *fxevent.LoggerInitialized:
-		if e.Err == nil {
-			l.Logger.Debug("initialized: custom fxevent.Logger -> ", e.ConstructorName)
-		}
-	}
-}
-
 // GetGinLogger gets logger for gin framework debugging
 func (l Logger) GetGinLogger() io.Writer {
 	logger := zapLogger.WithOptions(
@@ -191,72 +119,4 @@ func (l Logger) GetGinLogger() io.Writer {
 		Logger: newSugaredLogger(logger),
 	}
 	return result
-}
-
-// --- GORM logger interface implementation ---
-
-// LogMode set log mode
-func (l GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
-	l.LogLevel = level
-	return &l
-}
-
-// Info prints info
-func (l GormLogger) Info(_ context.Context, str string, args ...any) {
-	if l.LogLevel >= gormlogger.Info {
-		l.Debugf(str, args...)
-	}
-}
-
-// Warn prints warn messages
-func (l GormLogger) Warn(_ context.Context, str string, args ...any) {
-	if l.LogLevel >= gormlogger.Warn {
-		l.Warnf(str, args...)
-	}
-}
-
-// Error prints error messages
-func (l GormLogger) Error(_ context.Context, str string, args ...any) {
-	if l.LogLevel >= gormlogger.Error {
-		l.Errorf(str, args...)
-	}
-}
-
-// Trace prints trace messages
-func (l GormLogger) Trace(_ context.Context, begin time.Time, fc func() (string, int64), _ error) {
-	if l.LogLevel <= 0 {
-		return
-	}
-	elapsed := time.Since(begin)
-	if l.LogLevel >= gormlogger.Info {
-		sql, rows := fc()
-		l.Debug("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
-		return
-	}
-
-	if l.LogLevel >= gormlogger.Warn {
-		sql, rows := fc()
-		l.SugaredLogger.Warn("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
-		return
-	}
-
-	if l.LogLevel >= gormlogger.Error {
-		sql, rows := fc()
-		l.SugaredLogger.Error("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
-		return
-	}
-}
-
-// Printf prints go-fx logs
-func (l FxLogger) Printf(str string, args ...any) {
-	if len(args) > 0 {
-		l.Debugf(str, args)
-	}
-	l.Debug(str)
-}
-
-// Writer interface implementation for gin-framework
-func (l GinLogger) Write(p []byte) (n int, err error) {
-	l.Info(string(p))
-	return len(p), nil
 }
