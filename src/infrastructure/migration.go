@@ -42,7 +42,7 @@ func (m Migrations) Migrate() error {
 	migrations := &migrate.FileMigrationSource{
 		Dir: "migration/",
 	}
-	_, err = migrate.Exec(sqlDB, m.env.DBType, migrations, migrate.Up)
+	_, err = migrate.Exec(sqlDB, m.env.DatabaseType, migrations, migrate.Up)
 	if err != nil {
 		return err
 	}

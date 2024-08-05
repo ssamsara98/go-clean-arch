@@ -24,6 +24,7 @@
 venv/
 log/access.log
 log
+server.log
 app.yaml
 wire_gen.go
 __debug_bin*

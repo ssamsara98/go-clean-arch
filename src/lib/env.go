@@ -8,17 +8,13 @@ import (
 )
 
 type Env struct {
-	ServerPort  string `mapstructure:"SERVER_PORT"`
-	Environment string `mapstructure:"ENV"`
+	Port        string `mapstructure:"PORT"`
+	Environment string `mapstructure:"ENVIRONMENT"`
 	LogOutput   string `mapstructure:"LOG_OUTPUT"`
 	LogLevel    string `mapstructure:"LOG_LEVEL"`
 
-	DBUsername string `mapstructure:"DB_USER"`
-	DBPassword string `mapstructure:"DB_PASS"`
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBPort     string `mapstructure:"DB_PORT"`
-	DBName     string `mapstructure:"DB_NAME"`
-	DBType     string `mapstructure:"DB_TYPE"`
+	DatabaseType string `mapstructure:"DATABASE_TYPE"`
+	DatabaseUrl  string `mapstructure:"DATABASE_URL"`
 
 	MaxMultipartMemory   int64         `mapstructure:"MAX_MULTIPART_MEMORY"`
 	JWTAccessSecret      string        `mapstructure:"JWT_ACCESS_SECRET"`

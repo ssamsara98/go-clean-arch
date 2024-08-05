@@ -6,7 +6,6 @@ import (
 	"go-clean-arch/src/api/routes"
 	"go-clean-arch/src/infrastructure"
 	"go-clean-arch/src/lib"
-	"net"
 	"net/http"
 	"time"
 
@@ -60,45 +59,45 @@ func (s ServeCommand) Run() lib.CommandRunner {
 		// }
 
 		logger.Info("Running server")
-		// --- using router.Run
-		// if env.ServerPort == "" {
+
+		// /* Using router.Run */
+		// if env.Port == "" {
 		// 	if err := router.Run(); err != nil {
-		// 		logger.Fatal(err)
+		// 		logger.Panic(err)
 		// 		return
 		// 	}
 		// } else {
-		// 	if err := router.Run(":" + env.ServerPort); err != nil {
-		// 		logger.Fatal(err)
+		// 	if err := router.Run(":" + env.Port); err != nil {
+		// 		logger.Panic(err)
 		// 		return
 		// 	}
 		// }
 
-		// --- using lifecycle
-		var server *http.Server
-		if env.ServerPort != "" {
-			server = &http.Server{Addr: ":" + env.ServerPort, Handler: router}
-		} else {
-			server = &http.Server{Handler: router}
+		/* Using Lifecycle */
+		address := ":8080"
+		if env.Port != "" {
+			address = ":" + env.Port
 		}
+		server := &http.Server{Addr: address, Handler: router}
 		lc.Append(fx.Hook{
-			OnStart: func(ctx context.Context) error {
-				ln, err := net.Listen("tcp", server.Addr)
-				if err != nil {
-					return err
-				}
+			OnStart: func(ctx context.Context) (err error) {
 				logger.Info("Starting HTTP server at", server.Addr)
 				go func() {
-					err := server.Serve(ln)
-					if err != nil {
-						logger.Error(err)
+					err = server.ListenAndServe()
+					if err != nil && err != http.ErrServerClosed {
+						logger.Panic(err)
 					}
 				}()
-				return nil
+				return err
 			},
-			OnStop: func(ctx context.Context) error {
-				return server.Shutdown(ctx)
+			OnStop: func(ctx context.Context) (err error) {
+				logger.Info("Gracefully shutting down...")
+				err = server.Shutdown(ctx)
+				logger.Info("Server was successful shutdown.")
+				return err
 			},
 		})
+
 	}
 }
 
