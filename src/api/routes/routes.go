@@ -66,6 +66,6 @@ func (r Routes) Setup() {
 
 	// Not Found route
 	r.handler.NoRoute(func(c *gin.Context) {
-		utils.ErrorJSON(c, http.StatusNotFound, errors.New("not found"))
+		utils.ErrorJSON(c, errors.New("not found"), http.StatusNotFound)
 	})
 }

@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"go-clean-arch/src/constants"
 	"go-clean-arch/src/lib"
 
 	migrate "github.com/rubenv/sql-migrate"
@@ -28,7 +29,7 @@ type Migrations struct {
 
 // Migrate migrates all migrations that are defined
 func (m Migrations) Migrate() error {
-	if m.env.Environment == "production" {
+	if m.env.Environment == constants.Production {
 		m.logger.Info("no start-up migration on production.")
 		return nil
 	}

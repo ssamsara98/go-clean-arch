@@ -2,26 +2,27 @@ package utils
 
 import (
 	"go-clean-arch/src/constants"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func BindBody[T any](c *gin.Context) (*T, error) {
-	var body T
-	err := c.Bind(&body)
-	if err != nil {
+	body := new(T)
+	if err := c.Bind(body); err != nil {
+		ErrorJSON(c, err, http.StatusBadRequest)
 		return nil, err
 	}
-	return &body, nil
+	return body, nil
 }
 
 func BindUri[T any](c *gin.Context) (*T, error) {
-	var uri T
-	err := c.ShouldBindUri(&uri)
-	if err != nil {
+	uri := new(T)
+	if err := c.BindUri(uri); err != nil {
+		ErrorJSON(c, err, http.StatusBadRequest)
 		return nil, err
 	}
-	return &uri, nil
+	return uri, nil
 }
 
 func GetUser[T any](c *gin.Context) (*T, bool) {

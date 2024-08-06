@@ -39,11 +39,11 @@ func (m JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerFu
 	return func(c *gin.Context) {
 		authorizationHeader := c.Request.Header.Get("Authorization")
 		if authorizationHeader == "" {
-			utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("no token"))
+			utils.ErrorJSON(c, errors.New("no token"), http.StatusUnauthorized)
 			c.Abort()
 			return
 		} else if !strings.Contains(authorizationHeader, constants.TokenPrefix) {
-			utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("invalid token"))
+			utils.ErrorJSON(c, errors.New("invalid token"), http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
@@ -52,12 +52,12 @@ func (m JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerFu
 		claims, err := m.JWTAuth.VerifyToken(tokenString, tokenType)
 		if err != nil {
 			m.logger.Error("claims error")
-			utils.ErrorJSON(c, http.StatusUnauthorized, err)
+			utils.ErrorJSON(c, err, http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
 		if (claims.Type != constants.TokenAccess) && (claims.Type != constants.TokenRefresh) {
-			utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("wrong token type"))
+			utils.ErrorJSON(c, errors.New("wrong token type"), http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
@@ -65,7 +65,7 @@ func (m JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerFu
 		id, err := utils.ConvertStringToInt(claims.Subject)
 		if err != nil {
 			m.logger.Error("convert id error")
-			utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("you are not authorized"))
+			utils.ErrorJSON(c, errors.New("you are not authorized"), http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
@@ -74,7 +74,7 @@ func (m JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerFu
 			user := new(models.User)
 			res := m.db.Where("id = ?", id).First(user)
 			if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-				utils.ErrorJSON(c, http.StatusUnauthorized, errors.New("user not found"))
+				utils.ErrorJSON(c, errors.New("user not found"), http.StatusUnauthorized)
 				c.Abort()
 				return
 			}
