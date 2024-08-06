@@ -31,44 +31,41 @@ func (p PostsController) GetPostList(c *gin.Context) {
 	limit, page := utils.GetPaginationQuery(c)
 	items, count, err := p.postsService.SetPaginationScope(utils.Paginate(limit, page)).GetPostList()
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusInternalServerError, err)
+		utils.ErrorJSON(c, err)
 		return
 	}
 
 	resp := utils.CreatePagination(items, count, limit, page)
-	utils.SuccessJSON(c, http.StatusOK, resp)
+	utils.SuccessJSON(c, resp)
 }
 
 func (p PostsController) GetPostById(c *gin.Context) {
-	var uri dto.GetPostByIDParams
-	err := c.ShouldBindUri(&uri)
+	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
-	user, err := p.postsService.GetPostById(&uri)
+	user, err := p.postsService.GetPostById(uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusNotFound, err)
+		utils.ErrorJSON(c, err, http.StatusNotFound)
 		return
 	}
 
-	utils.SuccessJSON(c, http.StatusOK, user)
+	utils.SuccessJSON(c, user)
 }
 
 func (p PostsController) CreatePost(c *gin.Context) {
 	body, err := utils.BindBody[dto.CreatePostDto](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 	user, _ := utils.GetUser[models.User](c)
 	result, err := p.postsService.CreatePost(user, body)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusInternalServerError, err)
+		utils.ErrorJSON(c, err)
 		return
 	}
-	utils.SuccessJSON(c, http.StatusOK, result)
+	utils.SuccessJSON(c, result)
 }
 
 func (p PostsController) UpdatePost(c *gin.Context) {
@@ -76,23 +73,21 @@ func (p PostsController) UpdatePost(c *gin.Context) {
 
 	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	body, err := utils.BindBody[dto.UpdatePostDto](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	post, err := p.postsService.GetPostById(uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusNotFound, err)
+		utils.ErrorJSON(c, err, http.StatusNotFound)
 		return
 	}
 	if post.AuthorID != &user.ID {
-		utils.ErrorJSON(c, http.StatusForbidden, errors.New("author_id != user.id"))
+		utils.ErrorJSON(c, errors.New("author_id != user.id"), http.StatusForbidden)
 		return
 	}
 
@@ -106,23 +101,21 @@ func (p PostsController) PublishPost(c *gin.Context) {
 
 	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	body, err := utils.BindBody[dto.PublishPostDto](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	post, err := p.postsService.GetPostById(uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusNotFound, err)
+		utils.ErrorJSON(c, err, http.StatusNotFound)
 		return
 	}
 	if post.AuthorID != &user.ID {
-		utils.ErrorJSON(c, http.StatusForbidden, errors.New("author_id != user.id"))
+		utils.ErrorJSON(c, errors.New("author_id != user.id"), http.StatusForbidden)
 		return
 	}
 
@@ -136,17 +129,16 @@ func (p PostsController) DeletePost(c *gin.Context) {
 
 	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	post, err := p.postsService.GetPostById(uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusNotFound, err)
+		utils.ErrorJSON(c, err, http.StatusNotFound)
 		return
 	}
 	if post.AuthorID != &user.ID {
-		utils.ErrorJSON(c, http.StatusForbidden, errors.New("author_id != user.id"))
+		utils.ErrorJSON(c, errors.New("author_id != user.id"), http.StatusForbidden)
 		return
 	}
 

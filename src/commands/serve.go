@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-clean-arch/src/api/middlewares"
 	"go-clean-arch/src/api/routes"
+	"go-clean-arch/src/constants"
 	"go-clean-arch/src/infrastructure"
 	"go-clean-arch/src/lib"
 	"net/http"
@@ -33,7 +34,7 @@ func (s ServeCommand) Run() lib.CommandRunner {
 		routes *routes.Routes,
 		lc fx.Lifecycle,
 	) {
-		if env.Environment == "production" {
+		if env.Environment == constants.Production {
 			logger.Info(`+-------PRODUCTION-------+`)
 		}
 		logger.Info(`+------------------------+`)
@@ -47,7 +48,7 @@ func (s ServeCommand) Run() lib.CommandRunner {
 		middleware.Setup()
 		routes.Setup()
 
-		// if (env.Environment != "local" && env.Environment != "development") && env.SentryDSN != "" {
+		// if (env.Environment != constants.Local && env.Environment != constants.Development) && env.SentryDSN != "" {
 		// 	err := sentry.Init(sentry.ClientOptions{
 		// 		Dsn:              env.SentryDSN,
 		// 		AttachStacktrace: true,

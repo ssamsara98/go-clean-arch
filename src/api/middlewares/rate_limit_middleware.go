@@ -84,7 +84,7 @@ func (lm RateLimitMiddleware) Handle(options ...Option) gin.HandlerFunc {
 		// Limit exceeded
 		if context.Reached {
 			errNew := errors.New("rate limit exceed")
-			utils.ErrorJSON(c, http.StatusTooManyRequests, errNew)
+			utils.ErrorJSON(c, errNew, http.StatusTooManyRequests)
 			c.Abort()
 			return
 		}
