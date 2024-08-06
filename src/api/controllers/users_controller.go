@@ -29,26 +29,25 @@ func (u UsersController) GetUserList(c *gin.Context) {
 	limit, page := utils.GetPaginationQuery(c)
 	items, count, err := u.usersService.SetPaginationScope(utils.Paginate(limit, page)).GetUserList()
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusInternalServerError, err)
+		utils.ErrorJSON(c, err)
 		return
 	}
 
 	resp := utils.CreatePagination(items, count, limit, page)
-	utils.SuccessJSON(c, http.StatusOK, resp)
+	utils.SuccessJSON(c, resp)
 }
 
 func (u UsersController) GetUserByID(c *gin.Context) {
 	uri, err := utils.BindUri[dto.GetUserByIDParams](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	user, err := u.usersService.GetUserByID(uri)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusNotFound, err)
+		utils.ErrorJSON(c, err, http.StatusNotFound)
 		return
 	}
 
-	utils.SuccessJSON(c, http.StatusOK, user)
+	utils.SuccessJSON(c, user)
 }

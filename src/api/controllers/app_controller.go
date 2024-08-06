@@ -31,85 +31,79 @@ func NewAppController(
 
 func (app AppController) Home(c *gin.Context) {
 	message := app.appService.Home()
-	utils.SuccessJSON(c, http.StatusOK, message)
+	utils.SuccessJSON(c, message)
 }
 
 func (app AppController) Register(c *gin.Context) {
-	var body dto.RegisterUserDto
-	err := c.Bind(&body)
+	body, err := utils.BindBody[dto.RegisterUserDto](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
-	err = app.appService.FindEmailUsername(&body)
+	err = app.appService.FindEmailUsername(body)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusConflict, err)
+		utils.ErrorJSON(c, err, http.StatusConflict)
 		return
 	}
 
 	trxHandle, _ := c.MustGet(constants.DBTransaction).(*gorm.DB)
 
-	result, err := app.appService.WithTrx(trxHandle).Register(&body)
+	result, err := app.appService.WithTrx(trxHandle).Register(body)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusInternalServerError, err)
+		utils.ErrorJSON(c, err)
 		return
 	}
 
-	utils.SuccessJSON(c, http.StatusCreated, result)
+	utils.SuccessJSON(c, result, http.StatusCreated)
 }
 
 func (app AppController) Login(c *gin.Context) {
-	var body dto.LoginUserDto
-	err := c.Bind(&body)
+	body, err := utils.BindBody[dto.LoginUserDto](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
-	token, err := app.appService.Login(&body)
+	token, err := app.appService.Login(body)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusUnauthorized, err)
+		utils.ErrorJSON(c, err, http.StatusUnauthorized)
 		return
 	}
 
-	utils.SuccessJSON(c, http.StatusCreated, token)
+	utils.SuccessJSON(c, token, http.StatusCreated)
 }
 
 func (app AppController) Me(c *gin.Context) {
 	user, _ := c.MustGet(constants.User).(*models.User)
-	utils.SuccessJSON(c, http.StatusOK, user)
+	utils.SuccessJSON(c, user)
 }
 
 func (app AppController) UpdateProfile(c *gin.Context) {
-	var body dto.UpdateProfileDto
-	err := c.Bind(&body)
+	body, err := utils.BindBody[dto.UpdateProfileDto](c)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusBadRequest, err)
 		return
 	}
 
 	user, _ := c.MustGet(constants.User).(*models.User)
-	err = app.appService.UpdateProfile(user.ID, &body)
+	err = app.appService.UpdateProfile(user.ID, body)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusInternalServerError, err)
+		utils.ErrorJSON(c, err)
 		return
 	}
 
-	utils.SuccessJSON(c, http.StatusOK, "success")
+	utils.SuccessJSON(c, "success")
 }
 
 func (app AppController) TokenCheck(c *gin.Context) {
 	claims, _ := c.MustGet(constants.User).(*helpers.Claims)
-	utils.SuccessJSON(c, http.StatusOK, claims)
+	utils.SuccessJSON(c, claims)
 }
 
 func (app AppController) TokenRefresh(c *gin.Context) {
 	user, _ := c.MustGet(constants.User).(*models.User)
 	tokens, err := app.appService.TokenRefresh(user)
 	if err != nil {
-		utils.ErrorJSON(c, http.StatusUnauthorized, err)
+		utils.ErrorJSON(c, err, http.StatusUnauthorized)
 		return
 	}
-	utils.SuccessJSON(c, http.StatusOK, tokens)
+	utils.SuccessJSON(c, tokens)
 }

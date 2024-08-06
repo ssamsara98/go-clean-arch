@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"go-clean-arch/src/constants"
 	"io"
 	"time"
 
@@ -32,9 +33,9 @@ func newLogger(env *Env) Logger {
 	config := zap.NewDevelopmentConfig()
 	logOutput := env.LogOutput
 
-	if (env.Environment == "local") || (env.Environment == "development") {
+	if (env.Environment == constants.Local) || (env.Environment == constants.Development) {
 		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	} else if env.Environment == "production" && logOutput != "" {
+	} else if env.Environment == constants.Production && logOutput != "" {
 		config.OutputPaths = []string{logOutput}
 	}
 
@@ -82,7 +83,7 @@ func (l Logger) GetGormLogger() gormlogger.Interface {
 	ignoreRecordNotFoundError := false
 	colorful := true
 	if globalEnv != nil {
-		if globalEnv.Environment == "production" {
+		if globalEnv.Environment == constants.Production {
 			ignoreRecordNotFoundError = true
 			colorful = false
 		}

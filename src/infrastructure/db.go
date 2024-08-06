@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"go-clean-arch/src/constants"
 	"go-clean-arch/src/lib"
 
 	"gorm.io/driver/postgres"
@@ -22,7 +23,7 @@ func NewDatabase(
 	logger.Info("opening db connection")
 	var db *gorm.DB
 	var err error
-	if env.Environment == "production" {
+	if env.Environment == constants.Production {
 		db, err = gorm.Open(postgres.Open(env.DatabaseUrl), &gorm.Config{
 			Logger: logger.GetGormLogger(),
 		})
