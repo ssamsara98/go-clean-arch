@@ -1,3 +1,4 @@
+# flyctl launch added from .gitignore
 # Binaries for programs and plugins
 **/*.exe
 **/*.exe~
@@ -29,3 +30,4 @@
 **/wire_gen.go
 **/__debug_bin*
 **/serviceAccountKey.json
+fly.toml

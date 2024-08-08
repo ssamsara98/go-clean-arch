@@ -41,7 +41,7 @@ func (m Migrations) Migrate() error {
 
 	m.logger.Info("running migration.")
 	migrations := &migrate.FileMigrationSource{
-		Dir: "migration/",
+		Dir: "db/migrations/",
 	}
 	_, err = migrate.Exec(sqlDB, m.env.DatabaseType, migrations, migrate.Up)
 	if err != nil {

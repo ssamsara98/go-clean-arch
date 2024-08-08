@@ -28,7 +28,6 @@ type Claims struct {
 func NewJWTAuth(
 	env *lib.Env,
 	logger *lib.Logger,
-
 ) *JWTAuth {
 	return &JWTAuth{
 		env,

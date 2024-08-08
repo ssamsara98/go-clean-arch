@@ -59,12 +59,14 @@ func (p PostsController) CreatePost(c *gin.Context) {
 	if err != nil {
 		return
 	}
+
 	user, _ := utils.GetUser[models.User](c)
 	result, err := p.postsService.CreatePost(user, body)
 	if err != nil {
 		utils.ErrorJSON(c, err)
 		return
 	}
+
 	utils.SuccessJSON(c, result)
 }
 

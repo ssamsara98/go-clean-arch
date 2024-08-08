@@ -19,7 +19,6 @@ EXPOSE 4000
 # Required because go requires gcc to build
 RUN apk update && apk upgrade && apk add --no-cache build-base bash git inotify-tools make
 RUN go install github.com/rubenv/sql-migrate/...@latest
-RUN export PATH="$PATH:/go/bin"
 
 WORKDIR /app
 COPY --link go.mod go.sum ./
@@ -28,14 +27,15 @@ RUN go mod download
 FROM base as build
 RUN mkdir -p /tmp/build
 COPY --from=base --link /app/go.mod /app/go.sum /tmp/build/
-RUN cd /tmp/build && go mod tidy
+RUN cd /tmp/build && go mod tidy && go mod verify
 COPY --link . .
 RUN go build -buildvcs=false -o main
 
 FROM base AS release
 COPY --from=build /app/migration migration
 COPY --from=build /app/seeders seeders
-COPY --from=build /app/go.mod /app/go.sum /app/make /app/Makefile /app/dbconfig.yml /app/template.production.env /app/main ./
+COPY --from=build /app/go.mod /app/go.sum /app/make /app/Makefile /app/dbconfig.yaml /app/template.production.env /app/main ./
+COPY --link ./home/.profile /root/
 
 RUN mv template.production.env .env
 CMD ["./main", "app:serve"]
