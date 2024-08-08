@@ -1,10 +1,10 @@
 seed:
   dialect: postgres
   datasource: ${DATABASE_URL}
-  dir: seeders/
+  dir: db/seeders/
   table: gorp_seeds
 
 development:
   dialect: postgres
   datasource: ${DATABASE_URL}
-  dir: migration/
+  dir: db/migrations/

@@ -1,0 +1,43 @@
+version: "2"
+
+linters:
+  settings:
+    errcheck:
+      check-type-assertions: true
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+    govet:
+      disable-all: true
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    revive:
+      rules:
+        - name: unused-parameter
+          severity: warning
+          disabled: true
+          arguments:
+            - allowRegex: "^_|^tx$"
+
+  enable:
+    - bodyclose
+    - unused
+    - errcheck
+    - goconst
+    - gocyclo
+    - ineffassign
+    - misspell
+    - nakedret
+    - prealloc
+    - predeclared
+    - revive
+    - staticcheck
+    - unused
+    - unconvert
+    - unparam
+    - unused
+
+run:
+  issues-exit-code: 1
+  timeout: "1m"

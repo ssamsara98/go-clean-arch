@@ -1,11 +1,15 @@
 include .env
 export
 
-MIGRATE=docker compose -f ./docker/compose.yml exec web sql-migrate
+COMPOSE=docker compose -f ./docker/compose.yaml
 
+MIGRATE=docker compose -f ./docker/compose.yaml exec web sql-migrate
 ifeq ($(p),host)
 	MIGRATE=sql-migrate
 endif
+
+db:
+	$(MIGRATE) $(ARGS)
 
 migrate-status:
 	$(MIGRATE) status
@@ -38,21 +42,26 @@ create:
 
 create-venv:
 	python3 -m venv .venv
+# activate-venv:
+# 	source .venv/bin/activate
 
-lint-setup:
-	python3 -m ensurepip --upgrade
-	pip3 install pre-commit
+lint-setup: # must activate python virtual environment
+	python -m ensurepip --upgrade
+	pip install pre-commit
 	pre-commit install
 	pre-commit autoupdate
 
-.PHONY: migrate-status migrate-up migrate-down redo create lint-setup
+.PHONY: db migrate-status migrate-up migrate-down redo create lint-setup
 
+# *
 # docker compose
+# *
+
 dc:
-	docker compose -f ./docker/compose.yml $(ARGS)
+	${COMPOSE} $(ARGS)
 
 dc-up:
-	docker compose -f ./docker/compose.yml up -d $(ARGS)
+	${COMPOSE} up -d $(ARGS)
 
 dc-down:
-	docker compose -f ./docker/compose.yml down $(ARGS)
+	${COMPOSE} down $(ARGS)
