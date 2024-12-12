@@ -49,7 +49,7 @@ lint-setup: # must activate python virtual environment
 	python -m ensurepip --upgrade
 	pip install pre-commit
 	pre-commit install
-	pre-commit autoupdate
+	# pre-commit autoupdate
 
 .PHONY: db migrate-status migrate-up migrate-down redo create lint-setup
 

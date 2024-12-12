@@ -9,7 +9,10 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 )
 
-// GormLogger logger for gorm logging [subbed from main logger]
+/*
+GormLogger logger for gorm logging [subbed from main logger]
+*/
+
 type GormLogger struct {
 	*Logger
 	gormlogger.Config
@@ -24,9 +27,29 @@ func (l *GormLogger) setup() {
 	)
 
 	if l.Config.Colorful {
-		traceStr = "\n```sql " + gormlogger.Yellow + "[%.6f ms] " + gormlogger.Blue + "[rows:%v]\n" + gormlogger.Reset + gormlogger.Green + "%s\n" + gormlogger.Reset + "```"
-		traceWarnStr = gormlogger.Yellow + "%s\n" + gormlogger.Reset + "```sql " + gormlogger.Red + "[%.6f ms] " + gormlogger.Yellow + "[rows:%v]\n" + gormlogger.Reset + gormlogger.Blue + "%s\n" + gormlogger.Reset + "```"
-		traceErrStr = gormlogger.Red + "%s\n" + gormlogger.Reset + "```sql " + gormlogger.Yellow + "[%.6f ms] " + gormlogger.Green + "[rows:%v]\n" + gormlogger.Reset + gormlogger.Magenta + "%s\n" + gormlogger.Reset + "```"
+		traceStr = fmt.Sprintf(
+			"\n```sql %s %s\n%s\n%s```",
+			gormlogger.Yellow+"[%.6f ms]", // latency
+			gormlogger.Blue+"[rows:%v]",   // rows
+			gormlogger.Green+"%s",         // query
+			gormlogger.Reset,
+		)
+		traceWarnStr = fmt.Sprintf(
+			"%s\n```sql %s %s\n%s\n%s```",
+			gormlogger.Yellow+"%s"+gormlogger.Reset,
+			gormlogger.Red+"[%.6f ms]",     // latency
+			gormlogger.Magenta+"[rows:%v]", // rows
+			gormlogger.Blue+"%s",           // query
+			gormlogger.Reset,
+		)
+		traceErrStr = fmt.Sprintf(
+			"%s\n```sql %s %s\n%s\n%s```",
+			gormlogger.Red+"%s"+gormlogger.Reset,
+			gormlogger.Yellow+"[%.6f ms]", // latency
+			gormlogger.Green+"[rows:%v]",  // rows
+			gormlogger.Magenta+"%s",       // query
+			gormlogger.Reset,
+		)
 	}
 
 	l.traceStr = traceStr
@@ -34,36 +57,51 @@ func (l *GormLogger) setup() {
 	l.traceWarnStr = traceWarnStr
 }
 
-// --- GORM logger interface implementation ---
+/* --- GORM logger interface implementation --- */
 
-// LogMode set log mode
+/*
+LogMode set log mode
+*/
+
 func (l GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 	l.LogLevel = level
 	return &l
 }
 
-// Info prints info
+/*
+Info prints info messages
+*/
+
 func (l GormLogger) Info(_ context.Context, str string, args ...any) {
 	if l.LogLevel >= gormlogger.Info {
 		l.Debugf(str, args...)
 	}
 }
 
-// Warn prints warn messages
+/*
+Warn prints warn messages
+*/
+
 func (l GormLogger) Warn(_ context.Context, str string, args ...any) {
 	if l.LogLevel >= gormlogger.Warn {
 		l.Warnf(str, args...)
 	}
 }
 
-// Error prints error messages
+/*
+Error prints error messages
+*/
+
 func (l GormLogger) Error(_ context.Context, str string, args ...any) {
 	if l.LogLevel >= gormlogger.Error {
 		l.Errorf(str, args...)
 	}
 }
 
-// Trace prints trace messages
+/*
+Trace prints trace messages
+*/
+
 func (l GormLogger) Trace(_ context.Context, begin time.Time, fc func() (string, int64), err error) {
 	if l.LogLevel <= 0 {
 		return

@@ -1,11 +1,11 @@
 package models
 
 import (
-	"go-clean-arch/src/lib"
 	"time"
+
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 )
 
-// User model
 type User struct {
 	lib.ModelBase
 	Email     string     `json:"email" gorm:"unique"`

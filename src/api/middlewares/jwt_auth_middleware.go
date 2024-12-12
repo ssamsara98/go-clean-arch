@@ -2,16 +2,16 @@ package middlewares
 
 import (
 	"errors"
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/helpers"
-	"go-clean-arch/src/infrastructure"
-	"go-clean-arch/src/lib"
-	"go-clean-arch/src/models"
-	"go-clean-arch/src/utils"
-	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/helpers"
+	"github.com/ssamsara98/go-clean-arch/src/infrastructure"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/models"
+	"github.com/ssamsara98/go-clean-arch/src/utils"
 	"gorm.io/gorm"
 )
 
@@ -33,56 +33,49 @@ func NewJWTAuthMiddleware(
 	}
 }
 
-func (m JWTAuthMiddleware) Handle(tokenType string, needUser bool) gin.HandlerFunc {
+func (m JWTAuthMiddleware) Handle(tokenType string, needUser bool) fiber.Handler {
 	m.logger.Debug("setting up jwt auth middleware")
 
-	return func(c *gin.Context) {
-		authorizationHeader := c.Request.Header.Get("Authorization")
+	return func(c *fiber.Ctx) (err error) {
+		authorizationHeader := c.Get(fiber.HeaderAuthorization)
 		if authorizationHeader == "" {
-			utils.ErrorJSON(c, errors.New("no token"), http.StatusUnauthorized)
-			c.Abort()
-			return
+			return fiber.NewError(fiber.StatusUnauthorized, "no token")
 		} else if !strings.Contains(authorizationHeader, constants.TokenPrefix) {
-			utils.ErrorJSON(c, errors.New("invalid token"), http.StatusUnauthorized)
-			c.Abort()
-			return
+			return fiber.NewError(fiber.StatusUnauthorized, "invalid token")
 		}
 
 		tokenString := strings.Replace(authorizationHeader, constants.TokenPrefix+" ", "", -1)
 		claims, err := m.JWTAuth.VerifyToken(tokenString, tokenType)
 		if err != nil {
-			m.logger.Error("claims error")
-			utils.ErrorJSON(c, err, http.StatusUnauthorized)
-			c.Abort()
-			return
+			m.logger.Error("claims error => ", err.Error())
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				err = fiber.NewError(fiber.StatusForbidden, err.Error())
+			} else {
+				err = fiber.NewError(fiber.StatusUnauthorized, err.Error())
+			}
+			return err
 		}
 		if (claims.Type != constants.TokenAccess) && (claims.Type != constants.TokenRefresh) {
-			utils.ErrorJSON(c, errors.New("wrong token type"), http.StatusUnauthorized)
-			c.Abort()
-			return
+			return fiber.NewError(fiber.StatusUnauthorized, "wrong token type")
 		}
 
 		id, err := utils.ConvertStringToInt(claims.Subject)
 		if err != nil {
 			m.logger.Error("convert id error")
-			utils.ErrorJSON(c, errors.New("you are not authorized"), http.StatusUnauthorized)
-			c.Abort()
-			return
+			return fiber.NewError(fiber.StatusUnauthorized, "you are not authorized")
 		}
 
 		if needUser {
 			user := new(models.User)
 			res := m.db.Where("id = ?", id).First(user)
 			if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-				utils.ErrorJSON(c, errors.New("user not found"), http.StatusUnauthorized)
-				c.Abort()
-				return
+				return fiber.NewError(fiber.StatusUnauthorized, "user not found")
 			}
-			c.Set(constants.User, user)
+			c.Locals(constants.User, user)
 		} else {
-			c.Set(constants.User, claims)
+			c.Locals(constants.User)
 		}
 
-		c.Next()
+		return c.Next()
 	}
 }

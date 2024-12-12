@@ -1,11 +1,10 @@
 package routes
 
 import (
-	"go-clean-arch/src/api/controllers"
-	"go-clean-arch/src/api/middlewares"
-	"go-clean-arch/src/lib"
-
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/ssamsara98/go-clean-arch/src/api/controllers"
+	"github.com/ssamsara98/go-clean-arch/src/api/middlewares"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 )
 
 type UsersRoutes struct {
@@ -26,9 +25,10 @@ func NewUsersRoutes(
 	}
 }
 
-func (u UsersRoutes) Run(handler *gin.RouterGroup) {
+func (u UsersRoutes) Run(handler fiber.Router) {
 	router := handler.Group("users")
 
-	router.GET("/", u.paginationMiddleware.Handle(), u.usersController.GetUserList)
-	router.GET("/u/:userId", u.usersController.GetUserByID)
+	router.Get("", u.paginationMiddleware.Handle(), u.usersController.GetUserList)
+	router.Get("cursor", u.paginationMiddleware.HandleCursor(), u.usersController.GetUserListCursor)
+	router.Get("u/:userId", u.usersController.GetUserByID)
 }

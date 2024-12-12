@@ -1,24 +1,26 @@
 package dto
 
-import "time"
+import (
+	"github.com/ssamsara98/go-clean-arch/src/utils"
+)
 
 type RegisterUserDto struct {
-	Email    string `form:"email" binding:"required"`
-	Username string `form:"username" binding:"required"`
-	Password string `form:"password" binding:"required"`
-	Name     string `form:"name" binding:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+	Name     string `json:"name" validate:"required"`
 }
 
 type LoginUserDto struct {
-	UserSession string `form:"userSession" binding:"required"`
-	Password    string `form:"password" binding:"required"`
+	UserSession string `json:"userSession" validate:"required"`
+	Password    string `json:"password" validate:"required"`
 }
 
 type UpdateProfileDto struct {
-	Name      string     `form:"name"`
-	Birthdate *time.Time `form:"birthdate" time_format:"xxxx-xx-xx"`
+	Name      string            `json:"name"`
+	Birthdate *utils.CustomDate `json:"birthdate" time_format:"2006-01-02"`
 }
 
 type RenewAccessTokenReqDto struct {
-	RefreshToken string `json:"refreshToken" binding:"required"`
+	RefreshToken string `json:"refreshToken" validate:"required"`
 }

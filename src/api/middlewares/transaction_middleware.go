@@ -1,22 +1,28 @@
 package middlewares
 
 import (
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/infrastructure"
-	"go-clean-arch/src/lib"
-	"go-clean-arch/src/utils"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/infrastructure"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/utils"
 )
 
-// DBTransactionMiddleware -> struct for transaction
+/*
+DBTransactionMiddleware -> struct for transaction
+*/
+
 type DBTransactionMiddleware struct {
 	logger *lib.Logger
 	db     *infrastructure.Database
 }
 
-// NewDBTransactionMiddleware -> new instance of transaction
+/*
+NewDBTransactionMiddleware -> new instance of transaction
+*/
+
 func NewDBTransactionMiddleware(
 	logger *lib.Logger,
 	db *infrastructure.Database,
@@ -27,11 +33,14 @@ func NewDBTransactionMiddleware(
 	}
 }
 
-// Handle -> It setup the database transaction middleware
-func (m DBTransactionMiddleware) Handle() gin.HandlerFunc {
+/*
+Handle -> It setup the database transaction middleware
+*/
+
+func (m DBTransactionMiddleware) Handle() fiber.Handler {
 	m.logger.Debug("setting up database transaction middleware")
 
-	return func(c *gin.Context) {
+	return func(c *fiber.Ctx) (err error) {
 		txHandle := m.db.DB.Begin()
 		m.logger.Debug("beginning database transaction")
 
@@ -41,17 +50,19 @@ func (m DBTransactionMiddleware) Handle() gin.HandlerFunc {
 			}
 		}()
 
-		c.Set(constants.DBTransaction, txHandle)
-		c.Next()
+		c.Locals(constants.DBTransaction, txHandle)
+		err = c.Next()
 
-		if utils.StatusInList(c.Writer.Status(), []int{http.StatusOK, http.StatusCreated}) {
+		if utils.StatusInList(c.Response().StatusCode(), []int{http.StatusOK, http.StatusCreated}) {
 			m.logger.Debug("committing transactions")
 			if err := txHandle.Commit().Error; err != nil {
 				m.logger.Error("trx commit error: ", err)
 			}
 		} else {
-			m.logger.Debug("rolling back transaction due to status code: ", c.Writer.Status())
+			m.logger.Debug("rolling back transaction due to status code: ", c.Response().StatusCode())
 			txHandle.Rollback()
 		}
+
+		return err
 	}
 }

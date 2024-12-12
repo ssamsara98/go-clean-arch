@@ -1,11 +1,11 @@
 package middlewares
 
 import (
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/lib"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 )
 
 type PaginationMiddleware struct {
@@ -16,8 +16,8 @@ func NewPaginationMiddleware(logger *lib.Logger) *PaginationMiddleware {
 	return &PaginationMiddleware{logger: logger}
 }
 
-func (p PaginationMiddleware) Handle() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func (p PaginationMiddleware) Handle() fiber.Handler {
+	return func(c *fiber.Ctx) (err error) {
 		p.logger.Debug("setting up pagination middleware")
 
 		limit, err := strconv.ParseInt(c.Query("limit"), 10, 0)
@@ -26,13 +26,34 @@ func (p PaginationMiddleware) Handle() gin.HandlerFunc {
 		}
 
 		page, err := strconv.ParseInt(c.Query("page"), 10, 0)
-		if err != nil || limit < 1 {
+		if err != nil || page < 1 {
 			page = 1
 		}
 
-		c.Set(constants.Limit, limit)
-		c.Set(constants.Page, page)
+		c.Locals(constants.Limit, limit)
+		c.Locals(constants.Page, page)
 
-		c.Next()
+		return c.Next()
+	}
+}
+
+func (p PaginationMiddleware) HandleCursor() fiber.Handler {
+	p.logger.Debug("setting up cursor pagination middleware")
+
+	return func(c *fiber.Ctx) (err error) {
+		limit, err := strconv.ParseInt(c.Query("limit"), 10, 0)
+		if err != nil || limit < 5 {
+			limit = 10
+		}
+
+		cursor, err := strconv.ParseInt(c.Query("cursor"), 10, 0)
+		if err != nil {
+			cursor = 0
+		}
+
+		c.Locals(constants.Limit, limit)
+		c.Locals(constants.Cursor, cursor)
+
+		return c.Next()
 	}
 }

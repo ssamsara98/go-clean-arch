@@ -1,11 +1,10 @@
 package routes
 
 import (
-	"go-clean-arch/src/api/controllers"
-	"go-clean-arch/src/api/middlewares"
-	"go-clean-arch/src/constants"
-
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/ssamsara98/go-clean-arch/src/api/controllers"
+	"github.com/ssamsara98/go-clean-arch/src/api/middlewares"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
 )
 
 type AppRoutes struct {
@@ -26,12 +25,12 @@ func NewAppRoutes(
 	}
 }
 
-func (app AppRoutes) Run(handler *gin.RouterGroup) {
-	handler.GET("/", app.appController.Home)
-	handler.POST("/register", app.dbTransactionMiddleware.Handle(), app.appController.Register)
-	handler.POST("/login", app.appController.Login)
-	handler.GET("/me", app.jwtAuthMiddleware.Handle(constants.TokenAccess, true), app.appController.Me)
-	handler.PATCH("/me", app.jwtAuthMiddleware.Handle(constants.TokenAccess, true), app.appController.UpdateProfile)
-	handler.GET("/token/check", app.jwtAuthMiddleware.Handle(constants.TokenAccess, false), app.appController.TokenCheck)
-	handler.GET("/token/refresh", app.jwtAuthMiddleware.Handle(constants.TokenRefresh, true), app.appController.TokenRefresh)
+func (app AppRoutes) Run(handler fiber.Router) {
+	handler.Get("", app.appController.Home)
+	handler.Post("register", app.dbTransactionMiddleware.Handle(), app.appController.Register)
+	handler.Post("login", app.appController.Login)
+	handler.Get("me", app.jwtAuthMiddleware.Handle(constants.TokenAccess, true), app.appController.Me)
+	handler.Patch("me", app.jwtAuthMiddleware.Handle(constants.TokenAccess, true), app.appController.UpdateProfile)
+	handler.Get("token/check", app.jwtAuthMiddleware.Handle(constants.TokenAccess, false), app.appController.TokenCheck)
+	handler.Get("token/refresh", app.jwtAuthMiddleware.Handle(constants.TokenRefresh, true), app.appController.TokenRefresh)
 }

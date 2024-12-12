@@ -1,16 +1,16 @@
 package controllers
 
 import (
-	"go-clean-arch/src/api/dto"
-	"go-clean-arch/src/api/services"
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/helpers"
-	"go-clean-arch/src/lib"
-	"go-clean-arch/src/models"
-	"go-clean-arch/src/utils"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/ssamsara98/go-clean-arch/src/api/dto"
+	"github.com/ssamsara98/go-clean-arch/src/api/services"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/helpers"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/models"
+	"github.com/ssamsara98/go-clean-arch/src/utils"
 	"gorm.io/gorm"
 )
 
@@ -29,81 +29,81 @@ func NewAppController(
 	}
 }
 
-func (app AppController) Home(c *gin.Context) {
+func (app AppController) Home(c *fiber.Ctx) error {
 	message := app.appService.Home()
-	utils.SuccessJSON(c, message)
+	return utils.SuccessJSON(c, message)
 }
 
-func (app AppController) Register(c *gin.Context) {
+func (app AppController) Register(c *fiber.Ctx) error {
 	body, err := utils.BindBody[dto.RegisterUserDto](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	err = app.appService.FindEmailUsername(body)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusConflict)
-		return
+		return err
 	}
 
-	trxHandle, _ := c.MustGet(constants.DBTransaction).(*gorm.DB)
+	trxHandle, _ := c.Locals(constants.DBTransaction).(*gorm.DB)
 
-	result, err := app.appService.WithTrx(trxHandle).Register(body)
+	result, err := app.appService.Register(trxHandle, body)
 	if err != nil {
 		utils.ErrorJSON(c, err)
-		return
+		return err
 	}
 
-	utils.SuccessJSON(c, result, http.StatusCreated)
+	return utils.SuccessJSON(c, result, http.StatusCreated)
 }
 
-func (app AppController) Login(c *gin.Context) {
+func (app AppController) Login(c *fiber.Ctx) error {
 	body, err := utils.BindBody[dto.LoginUserDto](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	token, err := app.appService.Login(body)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusUnauthorized)
-		return
+		return err
 	}
 
-	utils.SuccessJSON(c, token, http.StatusCreated)
+	return utils.SuccessJSON(c, token, http.StatusCreated)
 }
 
-func (app AppController) Me(c *gin.Context) {
-	user, _ := c.MustGet(constants.User).(*models.User)
-	utils.SuccessJSON(c, user)
+func (app AppController) Me(c *fiber.Ctx) error {
+	user, _ := utils.GetUser[models.User](c)
+	return utils.SuccessJSON(c, user)
 }
 
-func (app AppController) UpdateProfile(c *gin.Context) {
+func (app AppController) UpdateProfile(c *fiber.Ctx) error {
 	body, err := utils.BindBody[dto.UpdateProfileDto](c)
 	if err != nil {
-		return
+		return err
 	}
 
-	user, _ := c.MustGet(constants.User).(*models.User)
+	user, _ := utils.GetUser[models.User](c)
 	err = app.appService.UpdateProfile(user.ID, body)
 	if err != nil {
 		utils.ErrorJSON(c, err)
-		return
+		return err
 	}
 
-	utils.SuccessJSON(c, "success")
+	return utils.SuccessJSON(c, "success")
 }
 
-func (app AppController) TokenCheck(c *gin.Context) {
-	claims, _ := c.MustGet(constants.User).(*helpers.Claims)
-	utils.SuccessJSON(c, claims)
+func (app AppController) TokenCheck(c *fiber.Ctx) error {
+	claims, _ := utils.GetUser[helpers.Claims](c)
+	return utils.SuccessJSON(c, claims)
 }
 
-func (app AppController) TokenRefresh(c *gin.Context) {
-	user, _ := c.MustGet(constants.User).(*models.User)
+func (app AppController) TokenRefresh(c *fiber.Ctx) error {
+	user, _ := utils.GetUser[models.User](c)
 	tokens, err := app.appService.TokenRefresh(user)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusUnauthorized)
-		return
+		return err
 	}
-	utils.SuccessJSON(c, tokens)
+	return utils.SuccessJSON(c, tokens)
 }

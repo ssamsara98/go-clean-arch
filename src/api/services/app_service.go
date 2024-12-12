@@ -2,14 +2,14 @@ package services
 
 import (
 	"errors"
-	"go-clean-arch/src/api/dto"
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/helpers"
-	"go-clean-arch/src/infrastructure"
-	"go-clean-arch/src/lib"
-	"go-clean-arch/src/models"
-	"go-clean-arch/src/utils"
 
+	"github.com/ssamsara98/go-clean-arch/src/api/dto"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/helpers"
+	"github.com/ssamsara98/go-clean-arch/src/infrastructure"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/models"
+	"github.com/ssamsara98/go-clean-arch/src/utils"
 	"gorm.io/gorm"
 )
 
@@ -34,20 +34,14 @@ func NewAppService(
 	}
 }
 
-// WithTrx delegates transaction to repository database
-func (app AppService) WithTrx(trxHandle *gorm.DB) *AppService {
-	app.db = app.db.WithTrx(trxHandle)
-	return &app
-}
-
 func (app AppService) Home() string {
 	return "Hello, World!"
 }
 
 func (app AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
-	var user models.User
+	user := new(models.User)
 
-	result := app.db.Where("email = ?", body.Email).Or("username = ?", body.Username).First(&user)
+	result := app.db.Where("email = ?", body.Email).Or("username = ?", body.Username).First(user)
 	if result.Error != nil {
 		return nil
 	}
@@ -61,22 +55,23 @@ func (app AppService) FindEmailUsername(body *dto.RegisterUserDto) error {
 	return result.Error
 }
 
-func (app AppService) Register(body *dto.RegisterUserDto) (*models.User, error) {
+func (app AppService) Register(trxHandle *gorm.DB, body *dto.RegisterUserDto) (*models.User, error) {
 	hashedPassword := utils.HashPassword([]byte(body.Password))
 
-	user := models.User{
+	user := &models.User{
 		Email:    body.Email,
 		Username: body.Username,
 		Password: string(hashedPassword),
 		Name:     body.Name,
 	}
 
-	err := app.db.Create(&user).Error
+	app.db = app.db.SetHandle(trxHandle)
+	err := app.db.Create(user).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 type Tokens struct {
@@ -120,13 +115,14 @@ func (app AppService) Login(body *dto.LoginUserDto) (*Tokens, error) {
 }
 
 func (app AppService) UpdateProfile(id uint, body *dto.UpdateProfileDto) error {
+	app.logger.Debug(body.Birthdate)
 	user := &models.User{
 		ModelBase: lib.ModelBase{ID: id},
 		Name:      body.Name,
-		Birthdate: body.Birthdate,
+		Birthdate: body.Birthdate.Time,
 	}
 
-	err := app.db.Model(&user).Updates(user).Error
+	err := app.db.Model(user).Updates(user).Error
 	if err != nil {
 		return err
 	}

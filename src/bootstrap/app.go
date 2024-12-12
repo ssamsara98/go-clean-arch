@@ -1,9 +1,8 @@
 package bootstrap
 
 import (
-	"go-clean-arch/src/commands"
-
 	"github.com/spf13/cobra"
+	"github.com/ssamsara98/go-clean-arch/src/commands"
 )
 
 var rootCmd = &cobra.Command{
@@ -19,12 +18,18 @@ var rootCmd = &cobra.Command{
 	TraverseChildren: true,
 }
 
-// App root of the application
+/*
+App root of the application
+*/
+
 type App struct {
 	*cobra.Command
 }
 
-// NewApp creates new root command
+/*
+NewApp creates new root command
+*/
+
 func NewApp() *App {
 	cmd := &App{
 		Command: rootCmd,

@@ -1,17 +1,19 @@
 package helpers
 
 import (
-	"errors"
 	"fmt"
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/lib"
-	"go-clean-arch/src/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/models"
 )
 
-// JWTAuth service relating to authorization
+/*
+JWTAuth service relating to authorization
+*/
+
 type JWTAuth struct {
 	env    *lib.Env
 	logger *lib.Logger
@@ -22,7 +24,7 @@ type Claims struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Type     string `json:"type"`
-	jwt.RegisteredClaims
+	*jwt.RegisteredClaims
 }
 
 func NewJWTAuth(
@@ -35,14 +37,18 @@ func NewJWTAuth(
 	}
 }
 
-// CreateToken creates jwt auth token
+/*
+CreateToken creates jwt auth token
+*/
+
 func (j JWTAuth) CreateToken(user *models.User, tokenType string) (string, error) {
 	var secret string
 	var duration time.Duration
-	if tokenType == constants.TokenAccess {
+	switch tokenType {
+	case constants.TokenAccess:
 		secret = j.env.JWTAccessSecret
 		duration = j.env.AccessTokenDuration
-	} else if tokenType == constants.TokenRefresh {
+	case constants.TokenRefresh:
 		secret = j.env.JWTRefreshSecret
 		duration = j.env.RefreshTokenDuration
 	}
@@ -54,8 +60,8 @@ func (j JWTAuth) CreateToken(user *models.User, tokenType string) (string, error
 		Email:    user.Email,
 		Username: user.Username,
 		Type:     tokenType,
-		RegisteredClaims: jwt.RegisteredClaims{
-			// In JWT, the expiry time is expressed as unix milliseconds
+		RegisteredClaims: &jwt.RegisteredClaims{
+			/* In JWT, the expiry time is expressed as unix milliseconds */
 			IssuedAt:  jwt.NewNumericDate(iat),
 			ExpiresAt: jwt.NewNumericDate(exp),
 			Subject:   fmt.Sprint(user.ID),
@@ -72,7 +78,10 @@ func (j JWTAuth) CreateToken(user *models.User, tokenType string) (string, error
 	return tokenString, nil
 }
 
-// Authorize authorizes the generated token
+/*
+Authorize authorizes the generated token
+*/
+
 func (j JWTAuth) VerifyToken(tokenString string, tokenType string) (*Claims, error) {
 	var secret string
 	if tokenType == constants.TokenAccess {
@@ -89,12 +98,12 @@ func (j JWTAuth) VerifyToken(tokenString string, tokenType string) (*Claims, err
 		return claims, nil
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-			return nil, errors.New("token malformed")
+			return nil, jwt.ErrTokenMalformed
 		}
 		if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-			return nil, errors.New("token expired")
+			return nil, jwt.ErrTokenExpired
 		}
 	}
 
-	return nil, errors.New("couldn't handle token")
+	return nil, err
 }

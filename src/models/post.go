@@ -1,10 +1,9 @@
 package models
 
 import (
-	"go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 )
 
-// User model
 type Post struct {
 	lib.ModelBase
 	AuthorID    *uint  `json:"authorId"`

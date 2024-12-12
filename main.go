@@ -1,9 +1,8 @@
 package main
 
 import (
-	"go-clean-arch/src/bootstrap"
-
 	"github.com/joho/godotenv"
+	"github.com/ssamsara98/go-clean-arch/src/bootstrap"
 )
 
 func main() {

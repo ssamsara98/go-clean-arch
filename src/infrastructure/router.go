@@ -1,99 +1,93 @@
 package infrastructure
 
 import (
+	"errors"
 	"fmt"
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/lib"
-	"go-clean-arch/src/utils"
+	"io"
 	"time"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/bytedance/sonic"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/etag"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/gofiber/fiber/v2/middleware/idempotency"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	lm "github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/utils"
 )
 
-// Router -> Gin Router
+const idleTimeout = 5 * time.Second
+
+func limiterConfig() limiter.Config {
+	return limiter.Config{
+		Max:        100,
+		Expiration: 10 * time.Second,
+	}
+}
+
+func lmConfig(logger io.Writer) lm.Config {
+	return lm.Config{
+		Output: logger,
+		Format: fmt.Sprintf(
+			"pid:${%s} | ${%s} | ${%s} | ${%s} | ${%s} | ${%s} | ${%s}",
+			lm.TagPid, lm.TagStatus, lm.TagLatency, lm.TagIP, lm.TagMethod, lm.TagPath, lm.TagError,
+		),
+		DisableColors: true,
+	}
+}
+
+/*
+Router -> Fiber Router
+*/
+
 type Router struct {
-	*gin.Engine
+	*fiber.App
 }
 
-func debugPrintRouteFunc(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-	debugPrint := func(format string, values ...any) {
-		if gin.IsDebugging() {
-			fmt.Fprintf(gin.DefaultWriter, "[GIN-debug] "+format, values...)
-		}
-	}
-	debugPrint("%-6s %-25s --> %s (%d handlers)", httpMethod, absolutePath, handlerName, nuHandlers)
-}
+/*
+NewRouter : all the routes are defined here
+*/
 
-func logFormatter(params gin.LogFormatterParams) string {
-	var statusColor, methodColor, resetColor string
-	if params.IsOutputColor() {
-		statusColor = params.StatusCodeColor()
-		methodColor = params.MethodColor()
-		resetColor = params.ResetColor()
-	}
-
-	if params.Latency > time.Minute {
-		params.Latency = params.Latency.Truncate(time.Second)
-	}
-	return fmt.Sprintf("[GIN] |%s %3d %s| %10v | %15s |%s %-7s %s| %#v | %s",
-		statusColor, params.StatusCode, resetColor,
-		params.Latency,
-		params.ClientIP,
-		methodColor, params.Method, resetColor,
-		params.Path,
-		params.ErrorMessage,
-	)
-}
-
-// NewRouter : all the routes are defined here
 func NewRouter(
 	env *lib.Env,
 	logger *lib.Logger,
 ) *Router {
 
-	// if (env.Environment != constants.Local && env.Environment != constants.Development) && env.SentryDSN != "" {
-	// 	if err := sentry.Init(sentry.ClientOptions{
-	// 		Dsn:         env.SentryDSN,
-	// 		Environment: `clean-backend-` + env.Environment,
-	// 	}); err != nil {
-	// 		logger.Infof("Sentry initialization failed: %v\n", err)
-	// 	}
-	// }
-
-	if env.Environment == constants.Production {
-		gin.SetMode(gin.ReleaseMode)
-		gin.DisableConsoleColor()
-	} else {
-		gin.SetMode(gin.DebugMode)
-		gin.ForceConsoleColor()
-	}
-	gin.DefaultWriter = logger.GetGinLogger()
-	gin.DebugPrintRouteFunc = debugPrintRouteFunc
-
-	httpRouter := gin.New()
-	httpRouter.MaxMultipartMemory = env.MaxMultipartMemory
-
-	httpRouter.Use(gin.LoggerWithFormatter(logFormatter))
-	httpRouter.Use(gin.Recovery())
-	httpRouter.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "OPTIONS", "DELETE"},
-		AllowHeaders:     []string{"*"},
-		AllowCredentials: true,
-	}))
-
-	// // Attach sentry middleware
-	// httpRouter.Use(sentrygin.New(sentrygin.Options{
-	// 	Repanic: true,
-	// }))
-
-	httpRouter.GET("/health-check", func(c *gin.Context) {
-		utils.SuccessJSON(c, "clean architecture 📺 API Up and Running")
+	app := fiber.New(fiber.Config{
+		IdleTimeout:  idleTimeout,
+		ErrorHandler: fiberErrorHandler,
+		JSONEncoder:  sonic.Marshal,
+		JSONDecoder:  sonic.Unmarshal,
+		BodyLimit:    5 * 1024 * 1024, // 5 MB
 	})
 
-	router := &Router{
-		httpRouter,
-	}
+	/* MaxMultipartMemory */
+
+	/* Middlewares */
+	app.Use(idempotency.New())
+	app.Use(recover.New())
+	app.Use(compress.New())
+	app.Use(cors.New())
+	app.Use(helmet.New())
+	app.Use(limiter.New(limiterConfig()))
+	app.Use(lm.New(lmConfig(logger.GetFiberLogger())))
+	app.Use(etag.New())
+	app.Use(healthcheck.New())
+
+	router := &Router{app}
 	return router
+}
+
+func fiberErrorHandler(c *fiber.Ctx, err error) error {
+	code := fiber.StatusInternalServerError
+	var e *fiber.Error
+	if errors.As(err, &e) {
+		code = e.Code
+	}
+	return utils.ErrorJSON(c, err, code)
 }

@@ -1,20 +1,25 @@
 package infrastructure
 
 import (
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/lib"
-
 	migrate "github.com/rubenv/sql-migrate"
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 )
 
-// Migrations -> Migration Struct
+/*
+Migrations -> Migration Struct
+*/
+
 type Migrations struct {
 	env    *lib.Env
 	logger *lib.Logger
 	db     *Database
 }
 
-// NewMigrations -> return new Migrations struct
+/*
+NewMigrations -> return new Migrations struct
+*/
+
 // func NewMigrations(
 // 	env *lib.Env,
 // 	logger *lib.Logger,
@@ -27,7 +32,10 @@ type Migrations struct {
 // 	}
 // }
 
-// Migrate migrates all migrations that are defined
+/*
+Migrate migrates all migrations that are defined
+*/
+
 func (m Migrations) Migrate() error {
 	if m.env.Environment == constants.Production {
 		m.logger.Info("no start-up migration on production.")
@@ -52,7 +60,10 @@ func (m Migrations) Migrate() error {
 	return nil
 }
 
-// RunMigration runs the migration provided logger and database instance
+/*
+RunMigration runs the migration provided logger and database instance
+*/
+
 func RunMigration(
 	env *lib.Env,
 	logger *lib.Logger,

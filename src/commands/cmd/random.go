@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"go-clean-arch/src/lib"
 	"math/rand"
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 )
 
 type RandomCommand struct {

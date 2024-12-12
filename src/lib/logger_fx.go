@@ -5,7 +5,10 @@ import (
 	"go.uber.org/zap"
 )
 
-// FxLogger logger for go-fx [subbed from main logger]
+/*
+FxLogger logger for go-fx [subbed from main logger]
+*/
+
 type FxLogger struct {
 	*Logger
 }
@@ -76,7 +79,10 @@ func (l FxLogger) LogEvent(event fxevent.Event) {
 	}
 }
 
-// Printf prints go-fx logs
+/*
+Printf prints go-fx logs
+*/
+
 func (l FxLogger) Printf(str string, args ...any) {
 	if len(args) > 0 {
 		l.Debugf(str, args)

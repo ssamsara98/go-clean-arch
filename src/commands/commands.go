@@ -2,10 +2,10 @@ package commands
 
 import (
 	"context"
-	"go-clean-arch/src/commands/cmd"
-	"go-clean-arch/src/lib"
 
 	"github.com/spf13/cobra"
+	"github.com/ssamsara98/go-clean-arch/src/commands/cmd"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 	"go.uber.org/fx"
 )
 
@@ -14,7 +14,10 @@ var cmds = map[string]lib.Command{
 	"app:serve":  NewServeCommand(),
 }
 
-// GetSubCommands gives a list of sub commands
+/*
+GetSubCommands gives a list of sub commands
+*/
+
 func GetSubCommands(opt fx.Option) []*cobra.Command {
 	subCommands := make([]*cobra.Command, 0)
 	for name, cmd := range cmds {

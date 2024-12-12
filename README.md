@@ -4,7 +4,7 @@ Clean Architecture with
 
 - [dipeshdulal](https://github.com/dipeshdulal/clean-gin)
 - [wesionaryTEAM](https://github.com/wesionaryTEAM/go_clean_architecture)
-- [Gin Web Framework](https://github.com/gin-gonic/gin)
+- [Go Fiber](https://github.com/gofiber/fiber)
 
 ## Linter setup
 

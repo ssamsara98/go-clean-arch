@@ -6,7 +6,10 @@ import (
 
 type CommandRunner any
 
-// Command interface is used to implement sub-commands in the system.
+/*
+Command interface is used to implement sub-commands in the system.
+*/
+
 type Command interface {
 	// Short returns string about short description of the command
 	// the string is shown in help screen of cobra command

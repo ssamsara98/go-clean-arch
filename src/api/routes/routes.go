@@ -1,17 +1,14 @@
 package routes
 
 import (
-	"errors"
-	"go-clean-arch/src/api/middlewares"
-	"go-clean-arch/src/infrastructure"
-	"go-clean-arch/src/utils"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"github.com/ssamsara98/go-clean-arch/src/infrastructure"
 	"go.uber.org/fx"
 )
 
-// Module exports dependency to container
+/*
+Module exports dependency to container
+*/
+
 var Module = fx.Options(
 	fx.Provide(NewRoutes),
 	fx.Provide(NewAppRoutes),
@@ -19,43 +16,49 @@ var Module = fx.Options(
 	fx.Provide(NewPostsRoutes),
 )
 
-// Route interface
+/*
+Route interface
+*/
+
 type IRoute interface {
 	Setup()
 }
 
-// Routes contains multiple routes
+/*
+Routes contains multiple routes
+*/
+
 type Routes struct {
-	handler             *infrastructure.Router
-	rateLimitMiddleware *middlewares.RateLimitMiddleware
-	appRoutes           *AppRoutes
-	usersRoutes         *UsersRoutes
-	postsRoutes         *PostsRoutes
+	handler     *infrastructure.Router
+	appRoutes   *AppRoutes
+	usersRoutes *UsersRoutes
+	postsRoutes *PostsRoutes
 }
 
-// NewRoutes sets up routes
+/* NewRoutes sets up routes */
 func NewRoutes(
 	handler *infrastructure.Router,
-	rateLimitMiddleware *middlewares.RateLimitMiddleware,
 	appRoutes *AppRoutes,
 	usersRoutes *UsersRoutes,
 	postsRoutes *PostsRoutes,
 ) *Routes {
 	return &Routes{
 		handler,
-		rateLimitMiddleware,
 		appRoutes,
 		usersRoutes,
 		postsRoutes,
 	}
 }
 
-// Setup all the route
+/*
+Setup all the route
+*/
+
 func (r Routes) Setup() {
 	// for _, route := range r {
 	// 	route.Setup()
 	// }
-	r.handler.Use(r.rateLimitMiddleware.Handle())
+	// r.handler.Use(r.rateLimitMiddleware.Handle())
 
 	root := r.handler.Group("")
 	apiV1 := r.handler.Group("v1")
@@ -65,7 +68,7 @@ func (r Routes) Setup() {
 	r.postsRoutes.Run(apiV1)
 
 	// Not Found route
-	r.handler.NoRoute(func(c *gin.Context) {
-		utils.ErrorJSON(c, errors.New("not found"), http.StatusNotFound)
-	})
+	// r.handler.NoRoute(func(c *gin.Context) {
+	// 	utils.ErrorJSON(c, http.StatusNotFound, errors.New("not found"))
+	// })
 }

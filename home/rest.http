@@ -1,0 +1,120 @@
+@hostname = localhost
+@port = 4000
+@host = {{hostname}}:{{port}}
+@contentType = application/json
+
+@url = http://{{host}}
+@accessToken =
+@refreshToken =
+@bearerAccessToken = Bearer {{accessToken}}
+@bearerRefreshToken = Bearer {{refreshToken}}
+
+### App
+
+GET {{url}} HTTP/1.1
+
+###
+
+POST {{url}}/register HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "email": "ssamsara98@mailsac.com",
+  "username": "ssamsara98",
+  "password": "asdf1234",
+  "name": "SSamsara 98"
+}
+
+###
+
+POST {{url}}/login HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "userSession": "ssamsara98",
+  "password": "asdf1234"
+}
+
+###
+
+GET {{url}}/me HTTP/1.1
+Authorization: {{bearerAccessToken}}
+
+###
+
+PATCH {{url}}/me HTTP/1.1
+Content-Type: {{contentType}}
+Authorization: {{bearerAccessToken}}
+
+{
+  "name": "S Abd Malik",
+  "birthdate": "2002-02-20"
+}
+
+###
+
+GET {{url}}/token/check HTTP/1.1
+Authorization: {{bearerAccessToken}}
+
+###
+
+GET {{url}}/token/refresh HTTP/1.1
+Authorization: {{bearerRefreshToken}}
+
+### Users
+
+GET {{url}}/v1/users?page=1&limit=5 HTTP/1.1
+
+###
+
+GET {{url}}/v1/users/cursor?cursor=2 HTTP/1.1
+
+###
+
+GET {{url}}/v1/users/u/1 HTTP/1.1
+
+### Posts
+
+GET {{url}}/v1/posts HTTP/1.1
+
+###
+
+GET {{url}}/v1/posts/p/1 HTTP/1.1
+
+###
+
+POST {{url}}/v1/posts HTTP/1.1
+Content-Type: {{contentType}}
+Authorization: {{bearerAccessToken}}
+
+{
+  "title": "Hi",
+  "content": "Hello, World",
+  "isPublished": true
+}
+
+###
+
+PATCH {{url}}/v1/posts/p/1 HTTP/1.1
+Content-Type: {{contentType}}
+Authorization: {{bearerAccessToken}}
+
+{
+  "title": "Lo",
+  "content": "Lorem ipsum dolor sit amet"
+}
+
+###
+
+PATCH {{url}}/v1/posts/p/1/publish HTTP/1.1
+Content-Type: {{contentType}}
+Authorization: {{bearerAccessToken}}
+
+{
+  "isPublished": true
+}
+
+###
+
+DELETE {{url}}/v1/posts/p/1 HTTP/1.1
+Authorization: {{bearerAccessToken}}

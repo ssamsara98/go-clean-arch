@@ -22,6 +22,11 @@ type Env struct {
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 
+	AWSAccessKeyID     string `mapstructure:"AWS_ACCESS_KEY_ID"`
+	AWSSecretAccessKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	AWSRegion          string `mapstructure:"AWS_REGION"`
+	AWSS3Bucket        string `mapstructure:"AWS_S3_BUCKET"`
+
 	TimeZone      string `mapstructure:"TIMEZONE"`
 	AdminEmail    string `mapstructure:"ADMIN_EMAIL"`
 	AdminPassword string `mapstructure:"ADMIN_PASSWORD"`

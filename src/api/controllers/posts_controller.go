@@ -2,14 +2,14 @@ package controllers
 
 import (
 	"errors"
-	"go-clean-arch/src/api/dto"
-	"go-clean-arch/src/api/services"
-	"go-clean-arch/src/lib"
-	"go-clean-arch/src/models"
-	"go-clean-arch/src/utils"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/ssamsara98/go-clean-arch/src/api/dto"
+	"github.com/ssamsara98/go-clean-arch/src/api/services"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
+	"github.com/ssamsara98/go-clean-arch/src/models"
+	"github.com/ssamsara98/go-clean-arch/src/utils"
 )
 
 type PostsController struct {
@@ -27,124 +27,124 @@ func NewPostsController(
 	}
 }
 
-func (p PostsController) GetPostList(c *gin.Context) {
+func (p PostsController) GetPostList(c *fiber.Ctx) error {
 	limit, page := utils.GetPaginationQuery(c)
-	items, count, err := p.postsService.SetPaginationScope(utils.Paginate(limit, page)).GetPostList()
+	items, count, err := p.postsService.GetPostList(limit, page)
 	if err != nil {
 		utils.ErrorJSON(c, err)
-		return
+		return err
 	}
 
 	resp := utils.CreatePagination(items, count, limit, page)
-	utils.SuccessJSON(c, resp)
+	return utils.SuccessJSON(c, resp)
 }
 
-func (p PostsController) GetPostById(c *gin.Context) {
-	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
+func (p PostsController) GetPostById(c *fiber.Ctx) error {
+	uri, err := utils.BindParams[dto.GetPostByIDParams](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	user, err := p.postsService.GetPostById(uri)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusNotFound)
-		return
+		return err
 	}
 
-	utils.SuccessJSON(c, user)
+	return utils.SuccessJSON(c, user)
 }
 
-func (p PostsController) CreatePost(c *gin.Context) {
+func (p PostsController) CreatePost(c *fiber.Ctx) error {
 	body, err := utils.BindBody[dto.CreatePostDto](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	user, _ := utils.GetUser[models.User](c)
 	result, err := p.postsService.CreatePost(user, body)
 	if err != nil {
 		utils.ErrorJSON(c, err)
-		return
+		return err
 	}
 
-	utils.SuccessJSON(c, result)
+	return utils.SuccessJSON(c, result)
 }
 
-func (p PostsController) UpdatePost(c *gin.Context) {
+func (p PostsController) UpdatePost(c *fiber.Ctx) error {
 	user, _ := utils.GetUser[models.User](c)
 
-	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
+	uri, err := utils.BindParams[dto.GetPostByIDParams](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	body, err := utils.BindBody[dto.UpdatePostDto](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	post, err := p.postsService.GetPostById(uri)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusNotFound)
-		return
+		return err
 	}
-	if post.AuthorID != &user.ID {
+	if *post.AuthorID != user.ID {
 		utils.ErrorJSON(c, errors.New("author_id != user.id"), http.StatusForbidden)
-		return
+		return err
 	}
 
 	p.postsService.UpdatePost(user, uri, body)
 
-	c.JSON(http.StatusNoContent, gin.H{})
+	return utils.SuccessJSON(c, fiber.Map{}, http.StatusNoContent)
 }
 
-func (p PostsController) PublishPost(c *gin.Context) {
+func (p PostsController) PublishPost(c *fiber.Ctx) error {
 	user, _ := utils.GetUser[models.User](c)
 
-	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
+	uri, err := utils.BindParams[dto.GetPostByIDParams](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	body, err := utils.BindBody[dto.PublishPostDto](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	post, err := p.postsService.GetPostById(uri)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusNotFound)
-		return
+		return err
 	}
-	if post.AuthorID != &user.ID {
+	if *post.AuthorID != user.ID {
 		utils.ErrorJSON(c, errors.New("author_id != user.id"), http.StatusForbidden)
-		return
+		return err
 	}
 
-	p.postsService.PublishPost(&post, uri, body)
+	p.postsService.PublishPost(post, uri, body)
 
-	c.JSON(http.StatusNoContent, gin.H{})
+	return utils.SuccessJSON(c, fiber.Map{}, http.StatusNoContent)
 }
 
-func (p PostsController) DeletePost(c *gin.Context) {
+func (p PostsController) DeletePost(c *fiber.Ctx) error {
 	user, _ := utils.GetUser[models.User](c)
 
-	uri, err := utils.BindUri[dto.GetPostByIDParams](c)
+	uri, err := utils.BindParams[dto.GetPostByIDParams](c)
 	if err != nil {
-		return
+		return err
 	}
 
 	post, err := p.postsService.GetPostById(uri)
 	if err != nil {
 		utils.ErrorJSON(c, err, http.StatusNotFound)
-		return
+		return err
 	}
-	if post.AuthorID != &user.ID {
+	if *post.AuthorID != user.ID {
 		utils.ErrorJSON(c, errors.New("author_id != user.id"), http.StatusForbidden)
-		return
+		return err
 	}
 
-	p.postsService.DeletePost(&post, user, uri)
+	p.postsService.DeletePost(post, user, uri)
 
-	c.JSON(http.StatusNoContent, gin.H{})
+	return utils.SuccessJSON(c, http.StatusNoContent, fiber.Map{})
 }

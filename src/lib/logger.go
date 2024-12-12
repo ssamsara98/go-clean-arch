@@ -1,10 +1,10 @@
 package lib
 
 import (
-	"go-clean-arch/src/constants"
 	"io"
 	"time"
 
+	"github.com/ssamsara98/go-clean-arch/src/constants"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -16,7 +16,10 @@ var (
 	zapLogger    *zap.Logger
 )
 
-// Logger structure
+/*
+Logger structure
+*/
+
 type Logger struct {
 	*zap.SugaredLogger
 }
@@ -27,20 +30,25 @@ func newSugaredLogger(logger *zap.Logger) *Logger {
 	}
 }
 
-// newLogger sets up logger
-func newLogger(env *Env) Logger {
+/*
+newLogger sets up logger
+*/
 
-	config := zap.NewDevelopmentConfig()
+func newLogger(env *Env) *Logger {
+
+	var config zap.Config
 	logOutput := env.LogOutput
 
 	if (env.Environment == constants.Local) || (env.Environment == constants.Development) {
+		config = zap.NewDevelopmentConfig()
 		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	} else if env.Environment == constants.Production && logOutput != "" {
+		config = zap.NewProductionConfig()
 		config.OutputPaths = []string{logOutput}
 	}
 
 	logLevel := env.LogLevel
-	level := zap.PanicLevel
+	var level zapcore.Level
 	switch logLevel {
 	case "debug":
 		level = zapcore.DebugLevel
@@ -50,30 +58,35 @@ func newLogger(env *Env) Logger {
 		level = zapcore.WarnLevel
 	case "error":
 		level = zapcore.ErrorLevel
-	case "fatal":
-		level = zapcore.FatalLevel
+	case "panic":
+		level = zapcore.PanicLevel
 	default:
-		level = zap.PanicLevel
+		level = zapcore.FatalLevel
 	}
 	config.Level.SetLevel(level)
 
 	zapLogger, _ = config.Build()
 	logger := newSugaredLogger(zapLogger)
 
-	return *logger
+	return logger
 }
 
-// GetLogger gets the global instance of the logger
+/*
+GetLogger gets the global instance of the logger
+*/
+
 func GetLogger() *Logger {
-	env := GetEnv()
 	if globalLogger == nil {
-		logger := newLogger(env)
-		globalLogger = &logger
+		env := GetEnv()
+		globalLogger = newLogger(env)
 	}
 	return globalLogger
 }
 
-// GetGormLogger build gorm logger from zap logger (sub-logger)
+/*
+GetGormLogger build gorm logger from zap logger (sub-logger)
+*/
+
 func (l Logger) GetGormLogger() gormlogger.Interface {
 	logger := zapLogger.WithOptions(
 		zap.AddCaller(),
@@ -102,7 +115,10 @@ func (l Logger) GetGormLogger() gormlogger.Interface {
 	return result
 }
 
-// GetFxLogger gets logger for go-fx
+/*
+GetFxLogger gets logger for go-fx
+*/
+
 func (l Logger) GetFxLogger() fxevent.Logger {
 	logger := zapLogger.WithOptions(
 		zap.WithCaller(false),
@@ -111,12 +127,15 @@ func (l Logger) GetFxLogger() fxevent.Logger {
 	return result
 }
 
-// GetGinLogger gets logger for gin framework debugging
-func (l Logger) GetGinLogger() io.Writer {
+/*
+GetFiberLogger gets logger for fiber framework debugging
+*/
+
+func (l Logger) GetFiberLogger() io.Writer {
 	logger := zapLogger.WithOptions(
 		zap.WithCaller(false),
 	)
-	result := &GinLogger{
+	result := &FiberLogger{
 		Logger: newSugaredLogger(logger),
 	}
 	return result

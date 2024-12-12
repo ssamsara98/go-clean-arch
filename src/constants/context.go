@@ -17,6 +17,8 @@ const (
 	Limit = "Limit"
 	// Page
 	Page = "Page"
+	// Page
+	Cursor = "Cursor"
 
 	// Rate Limit
 	RateLimit = "RateLimit"

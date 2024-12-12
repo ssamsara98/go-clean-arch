@@ -1,21 +1,26 @@
 package infrastructure
 
 import (
-	"go-clean-arch/src/constants"
-	"go-clean-arch/src/lib"
-
+	"github.com/ssamsara98/go-clean-arch/src/constants"
+	"github.com/ssamsara98/go-clean-arch/src/lib"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 )
 
-// Database modal
+/*
+Database modal
+*/
+
 type Database struct {
 	*gorm.DB
 	logger *lib.Logger
 }
 
-// NewDatabase creates a new database instance
+/*
+NewDatabase creates a new database instance
+*/
+
 func NewDatabase(
 	env *lib.Env,
 	logger *lib.Logger,
@@ -81,11 +86,10 @@ func NewDatabase(
 	return database
 }
 
-// WithTrx delegate transaction from user repository
-func (d Database) WithTrx(trxHandle *gorm.DB) *Database {
-	if trxHandle != nil {
-		d.logger.Debug("using WithTrx as trxHandle is not nil")
-		d.DB = trxHandle
+func (d Database) SetHandle(handle *gorm.DB) *Database {
+	if handle != nil {
+		d.logger.Debug("using SetHandle as handle is not nil")
+		d.DB = handle
 	}
 	return &d
 }
